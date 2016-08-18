@@ -1,0 +1,11 @@
+title = "sample"
+
+[table]
+a = true
+b = [hoge, piyo,
+     fuga]
+c = "string"
+d = """
+    multi
+    string 
+    """
