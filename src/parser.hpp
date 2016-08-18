@@ -4,7 +4,7 @@
 #include "exceptions.hpp"
 #include "line_operation.hpp"
 #include "toml_values.hpp"
-#include "parse_to_value.hpp"
+#include "parse_value.hpp"
 
 namespace toml
 {
@@ -32,16 +32,6 @@ read_line(std::basic_istream<charT, traits>& is)
     std::basic_string<charT, traits> line;
     std::getline(is, line);
     return remove_indent(remove_extraneous_whitespace(remove_comment(line)));
-}
-
-template<typename charT, typename traits, typename alloc>
-std::basic_istream<charT, traits>&
-putback_line(std::basic_istream<charT, traits>& is,
-             const std::basic_string<charT, traits, alloc>& line)
-{
-    for(auto iter = line.crbegin(); iter != line.crend(); ++iter)
-        is.putback(*iter);
-    return is;
 }
 
 template<typename charT, typename traits, typename alloc>
@@ -129,6 +119,7 @@ parse_table(std::basic_istream<charT, traits>& is)
         std::dynamic_pointer_cast<table_type>(retval);
     while(!is.eof())
     {
+        const auto current_pos = is.tellg();
         const std::basic_string<charT, traits> line = read_line(is);
         if(line.empty()) continue;
         LineKind kind = determine_line_kind(line);
@@ -136,12 +127,12 @@ parse_table(std::basic_istream<charT, traits>& is)
         {
             case LineKind::TABLE_TITLE:
             {
-                putback_line(is, line);
+                is.seekg(current_pos);
                 return retval;
             }
             case LineKind::ARRAY_OF_TABLE_TITLE:
             {
-                putback_line(is, line);
+                is.seekg(current_pos);
                 return retval;
             }
             case LineKind::KEY_VALUE:
@@ -181,7 +172,6 @@ Data parse(std::basic_istream<charT, traits>& is)
             }
             case LineKind::ARRAY_OF_TABLE_TITLE:
             {
-
                 break;
             }
             case LineKind::KEY_VALUE:
