@@ -5,6 +5,7 @@
 #include "line_operation.hpp"
 #include "toml_values.hpp"
 #include "parse_value.hpp"
+#include <memory>
 
 namespace toml
 {
@@ -48,7 +49,7 @@ determine_line_kind(const std::basic_string<charT, traits, alloc>& line)
     else if(std::count(line.begin(), line.end(), '=') >= 1)
     {
         if(line.front() == '=')
-            throw syntax_error("line starts with =");
+            throw syntax_error<charT, traits, alloc>("line starts with = " + line);
         return LineKind::KEY_VALUE;
     }
     else
@@ -67,7 +68,7 @@ extract_table_title(const std::basic_string<charT, traits, alloc>& line)
         return line.substr(1, line.size()-2);
     }
     else
-        throw internal_error("not table title line");
+        throw internal_error<charT, traits, alloc>("not table title line" + line);
 }
 
 template<typename charT, typename traits, typename alloc>
@@ -142,13 +143,19 @@ parse_table(std::basic_istream<charT, traits>& is)
                     const auto kv = parse_key_value(line, is);
                     table->value[kv.first] = kv.second;
                 }
-                catch(end_of_file& eof){throw syntax_error("sudden eof");}
+                catch(end_of_file& eof)
+                {
+                    throw syntax_error<charT, traits,
+                                       std::allocator<charT>>("sudden eof");
+                }
                 break;
             }
             case LineKind::UNKNOWN:
-                throw syntax_error("unknown line: " + line); // XXX!
+                throw syntax_error<charT, traits,
+                               std::allocator<charT>>("unknown line: " + line);
             default:
-                throw internal_error("invalid line kind");
+                throw internal_error<charT, traits,
+                               std::allocator<charT>>("invalid line kind");
         }
     }
     return retval;
@@ -183,14 +190,17 @@ Data parse(std::basic_istream<charT, traits>& is)
                 }
                 catch(end_of_file& eof)
                 {
-                    throw syntax_error("sudden eof");
+                    throw syntax_error<charT, traits,
+                               std::allocator<charT>>("sudden eof");
                 }
                 break;
             }
             case LineKind::UNKNOWN:
-                throw syntax_error("unknown line: " + line);
+                throw syntax_error<charT, traits,
+                               std::allocator<charT>>("unknown line: " + line);
             default:
-                throw internal_error("invalid line kind");
+                throw internal_error<charT, traits,
+                               std::allocator<charT>>("invalid line kind");
         }
     }
     return data;
