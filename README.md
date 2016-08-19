@@ -3,78 +3,60 @@ TOMLParser
 
 C++ header-only TOML Parser.
 
-developping is now ongoing. following is just a goal.
+## Usage
 
-<!--
- ## Usage
+You can easily see how to use this library with reading following code.
 
- You can easily see how to use this library with reading following code.
+    #include "toml.hpp"
+    #include <fstream>
+    std::ifstream file("filename.toml");
+    toml::Data                      data  = toml::parse(file);
+    std::string                     title = toml::get<toml::String>(data.at("title"));
+    toml::Table                     table = toml::get<toml::Table>(data.at("table"));
+    bool                            foo   = toml::get<toml::Boolean>(table.at("foo"));
+    std::vector<double>             bar   = toml::get<toml::Array<Floating>>(table.at("bar"));
+    std::vector<std::int_least64_t> baz   = toml::get<toml::Array<Floating>>(table.at("baz"));
 
-     #include "toml.hpp"
-     #include <fstream>
-     std::ifstream file("filename.toml");
-     toml::Data          data  = toml::parse(file);
-     toml::Table         table = data.at("tablename");
-     bool                value = get<toml::Boolean>(table.at("foo"));
-     std::vector<double> array = get<toml::Array<Floating>>(table.at("bar"));
-     std::vector<toml::Table> array_of_table = data.at("arrayOfTable");
+this code can parse the following toml file.
 
- this code can parse the following toml file.
+    # filename.toml
+    title = "this is sample"
+    [table]
+    foo = true
+    bar = [1.0, 2.0, 3.0]
+    baz = [100_000, 200_000, 300_000_000]
 
-     # filename.toml
-     [tablename]
-     foo = true
-     bar = [1.0, 2.0, 3.0]
+Supported TOML types are listed below.
+All the supported toml-type are in the namespace "toml".
 
-     [[arrayOfTable]]
-     hoge = "piyo"
-     [[arrayOfTable]]
-     hoge = "fuga"
-     # or
-     # arrayOfTable = [
-     #     {hoge = "piyo"}
-     #     {hoge = "fuga"}
-     # ]
+| toml type | typename in this library| you can get data as                    |
+|:----------|:------------------------|:---------------------------------------|
+| Boolean   | toml::Boolean           | bool                                   |
+| Integer   | toml::Integer           | std::int\_least64\_t                   |
+| Float     | toml::Float             | double                                 |
+| String    | toml::String            | std::string                            |
+| Datetime  | toml::Datetime          | std::chrono::system\_clock::time\_point|
+| Array     | toml::Array<typename T> | std::vector<T>                         |
+| Table     | toml::Table             | std::map<std::string, value_base>      |
 
- Supported TOML types are listed below. All the supported toml-type are in the namespace "toml".
+toml::Data type is same as toml::Table. there are no difference.
 
- | toml type | typename in this library| you can get data as |
- |:----------|:------------------------|:------------|
- | Boolean   | Boolean                 | bool        |
- | Integer   | Integer                 | int64\_t    |
- | Float     | Float                   | double      |
- | String    | String                  | std::string |
- | Datetime  | Datetime                | std::chrono::system\_clock::time\_point|
- | Array     | Array<typename T_value> | std::vector<value_base>           |
- | Table     | Table                   | std::map<std::string, value_base> |
+### Dependency
 
- ### Dependency
+Core codes depend on c++11 standard library only.
 
- Core codes depend on c++11 standard library only.
+## Install 
 
- ## Install 
+This library is header-only library, so the only thing you have to do is add
+path/to/this/library to include path.
 
- This library is header-only library, so the only thing you have to do is add
- path/to/this/library to include path.
+## Documents
 
- ## Documents
+sorry, not written yet.
 
- Depends on Doxygen and CMake.
- To generate document of this library, run following commands.
+## Testing
 
-     cd build
-     cmake ..
-     make doc
-
- ## Testing
-
- Test codes depends on Boost unittest framework and CMake CTest.
- To test the code, run following commands.
-
-     cd build
-     cmake ..
-     make test
--->
+sorry, not implemented yet.
 
 ## Licensing terms
 
