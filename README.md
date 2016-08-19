@@ -44,7 +44,8 @@ toml::Data type is same as toml::Table. there are no difference.
 value\_base is empty struct and is superclass of all other (library-internal)
 toml value types. You can get the value from shared pointer to value\_base using
 
-    toml::get<T>(std::shared_ptr<value_base>)
+    template<typename T>
+    T toml::get<T>(std::shared_ptr<value_base> const&)
 
 function.
 
