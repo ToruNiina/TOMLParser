@@ -1,5 +1,4 @@
-#include "parser.hpp"
-#include "get.hpp"
+#include "toml.hpp"
 #include <fstream>
 
 int main(int argc, char **argv)
