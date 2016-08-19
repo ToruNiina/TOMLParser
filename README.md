@@ -36,16 +36,23 @@ All the supported toml-type are in the namespace "toml".
 | Float     | toml::Float             | double                                 |
 | String    | toml::String            | std::string                            |
 | Datetime  | toml::Datetime          | std::chrono::system\_clock::time\_point|
-| Array     | toml::Array<typename T> | std::vector<T>                         |
-| Table     | toml::Table             | std::map<std::string, value_base>      |
+| Array     | toml::Array< typename T > | std::vector < T >                    |
+| Table     | toml::Table             | std::map< std::string, std::shared\_ptr < value\_base > > |
 
 toml::Data type is same as toml::Table. there are no difference.
+
+value\_base is empty struct and is superclass of all other (library-internal)
+toml value types. You can get the value from shared pointer to value\_base using
+
+    toml::get<T>(std::shared_ptr<value_base>)
+
+function.
 
 ### Dependency
 
 Core codes depend on c++11 standard library only.
 
-## Install 
+## Install
 
 This library is header-only library, so the only thing you have to do is add
 path/to/this/library to include path.
