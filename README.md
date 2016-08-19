@@ -5,21 +5,21 @@ C++ header-only TOML Parser.
 
 ## Usage
 
-You can easily see how to use this library with reading following code.
+You can easily see how to use this library if you read the following code.
 
     #include "toml.hpp"
     #include <fstream>
-    std::ifstream file("filename.toml");
+    std::ifstream file("sample.toml");
     toml::Data                      data  = toml::parse(file);
     std::string                     title = toml::get<toml::String>(data.at("title"));
     toml::Table                     table = toml::get<toml::Table>(data.at("table"));
     bool                            foo   = toml::get<toml::Boolean>(table.at("foo"));
-    std::vector<double>             bar   = toml::get<toml::Array<Floating>>(table.at("bar"));
-    std::vector<std::int_least64_t> baz   = toml::get<toml::Array<Floating>>(table.at("baz"));
+    std::vector<double>             bar   = toml::get<toml::Array<Float>>(table.at("bar"));
+    std::vector<std::int_least64_t> baz   = toml::get<toml::Array<Integer>>(table.at("baz"));
 
-this code can parse the following toml file.
+this code can read the following toml file.
 
-    # filename.toml
+    # sample.toml
     title = "this is sample"
     [table]
     foo = true
@@ -29,7 +29,7 @@ this code can parse the following toml file.
 Supported TOML types are listed below.
 All the supported toml-type are in the namespace "toml".
 
-| toml type | typename in this library| you can get data as                    |
+| TOML type | typename in this library| you can get data as                    |
 |:----------|:------------------------|:---------------------------------------|
 | Boolean   | toml::Boolean           | bool                                   |
 | Integer   | toml::Integer           | std::int\_least64\_t                   |
