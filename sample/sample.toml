@@ -2,10 +2,17 @@ title = "sample"
 
 [table]
 a = true
-b = [hoge, piyo,
-     fuga]
+b = [1, 2,
+     3]
 c = "string"
 d = """
     multi
     string 
     """
+
+ [table2]
+ a = false
+ b = [true, true, false]
+ c = 'literal'
+ d = '''multi
+     literal'''
