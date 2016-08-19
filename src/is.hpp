@@ -27,15 +27,26 @@ struct is_impl<Boolean, charT, traits, alloc>
 template<typename charT, typename traits, typename alloc>
 struct is_impl<Integer, charT, traits, alloc>
 {
-    // XXX: 1__2
     static bool apply(const std::basic_string<charT, traits, alloc>& str)
     {
         auto iter = str.cbegin();
         if(*iter == '+' || *iter == '-') ++iter;
+        bool underscore = false;
         for(; iter != str.cend(); ++iter)
         {
-            if(not(('0' <= *iter && *iter <= '9') || *iter == '_'))
+            if(('0' <= *iter && *iter <= '9'))
+            {
+                underscore = false;
+            }
+            else if(*iter == '_')
+            {// each underscore must be surrounded by at least one digit.
+                if(underscore) return false;
+                underscore = true;
+            }
+            else
+            {
                 return false;
+            }
         }
         return true;
     }
@@ -57,23 +68,32 @@ struct is_impl<Float, charT, traits, alloc>
         if(*iter == '+' || *iter == '-') ++iter;
 
         bool flag_eE = false;
+        bool underscore = false;
         for(; iter != str.cend(); ++iter)
         {
-            if(('0' <= *iter && *iter <= '9') || *iter == '_')
+            if(('0' <= *iter && *iter <= '9'))
             {
-                continue;
+                underscore = false;
+            }
+            else if(*iter == '_')
+            {// each underscore must be surrounded by at least one digit.
+                if(underscore) return false;
+                underscore = true;
             }
             else if(*iter == 'e' || *iter == 'E')
             {
+                if(underscore) return false;
                 flag_eE = true; // this appear only once.
             }
             else if(*iter == '+' || *iter == '-')
             {
-                if(!flag_eE) return false;// this is not begin.
+                if(underscore) return false;
+                if(!flag_eE)   return false;// this is not begin.
             }
             else if(*iter == '.')
             {
-                if(!flag_eE) return false;
+                if(underscore) return false;
+                if(!flag_eE)   return false;
             }
             else return false;
         }
