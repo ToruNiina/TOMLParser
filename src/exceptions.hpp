@@ -37,10 +37,11 @@ class end_of_file : public file_error
     virtual ~end_of_file() noexcept override = default;
 };
 
+template<typename charT, typename traits, typename alloc>
 class syntax_error : public exception
 {
   public:
-    syntax_error(const std::string& str) : str_(str) {}
+    syntax_error(const std::basic_string<charT, traits, alloc>& str):str_(str){}
     virtual ~syntax_error() noexcept override = default;
 
     virtual const char* what() const noexcept override
@@ -49,13 +50,14 @@ class syntax_error : public exception
     }
 
   private:
-    std::string str_;
+    std::basic_string<charT, traits, alloc> str_;
 };
 
+template<typename charT, typename traits, typename alloc>
 class type_error : public exception
 {
   public:
-    type_error(const std::string& str) : str_(str) {}
+    type_error(const std::basic_string<charT, traits, alloc>& str):str_(str){}
     virtual ~type_error() noexcept override = default;
 
     virtual const char* what() const noexcept override
@@ -64,13 +66,14 @@ class type_error : public exception
     }
 
   private:
-    std::string str_;
+    std::basic_string<charT, traits, alloc> str_;
 };
 
+template<typename charT, typename traits, typename alloc>
 class internal_error : public exception
 {
   public:
-    internal_error(const std::string& str) : str_(str) {}
+    internal_error(const std::basic_string<charT, traits, alloc>& str):str_(str){}
     virtual ~internal_error() noexcept override = default;
 
     virtual const char* what() const noexcept override
@@ -79,7 +82,7 @@ class internal_error : public exception
     }
 
   private:
-    std::string str_;
+    std::basic_string<charT, traits, alloc> str_;
 };
 
 
