@@ -29,7 +29,8 @@ struct is_impl<Integer, charT, traits, alloc>
 {
     static bool apply(const std::basic_string<charT, traits, alloc>& str)
     {
-        auto iter = str.cbegin();
+        typename std::basic_string<charT, traits, alloc>::const_iterator
+            iter = str.begin();
         if(*iter == '+' || *iter == '-') ++iter;
         bool underscore = false;
         for(; iter != str.cend(); ++iter)
@@ -57,19 +58,20 @@ struct is_impl<Float, charT, traits, alloc>
 {
     static bool apply(const std::basic_string<charT, traits, alloc>& str)
     {
-        const std::size_t num_eE = std::count(str.cbegin(), str.cend(), 'e') + 
-                                   std::count(str.cbegin(), str.cend(), 'E');
+        const std::size_t num_eE = std::count(str.begin(), str.end(), 'e') + 
+                                   std::count(str.begin(), str.end(), 'E');
         if(1 < num_eE) return false;
 
-        const std::size_t num_dot = std::count(str.cbegin(), str.cend(), '.');
+        const std::size_t num_dot = std::count(str.begin(), str.end(), '.');
         if(1 < num_dot) return false;
 
-        auto iter = str.cbegin();
+        typename std::basic_string<charT, traits, alloc>::const_iterator
+            iter = str.begin();
         if(*iter == '+' || *iter == '-') ++iter;
 
         bool flag_eE = false;
         bool underscore = false;
-        for(; iter != str.cend(); ++iter)
+        for(; iter != str.end(); ++iter)
         {
             if(('0' <= *iter && *iter <= '9'))
             {
@@ -190,7 +192,7 @@ struct is_impl<Datetime, charT, traits, alloc>
 
     static bool get_number_digit(
             std::basic_istringstream<charT, traits, alloc>& iss, 
-            std::size_t l)
+            const std::size_t l)
     {
         for(std::size_t i=0; i<l; ++i)
         {
