@@ -120,7 +120,7 @@ parse_table(std::basic_istream<charT, traits>& is)
         std::dynamic_pointer_cast<table_type>(retval);
     while(!is.eof())
     {
-        const auto current_pos = is.tellg();
+        const auto line_head = is.tellg();
         const std::basic_string<charT, traits> line = read_line(is);
         if(line.empty()) continue;
         LineKind kind = determine_line_kind(line);
@@ -128,12 +128,12 @@ parse_table(std::basic_istream<charT, traits>& is)
         {
             case LineKind::TABLE_TITLE:
             {
-                is.seekg(current_pos);
+                is.seekg(line_head);
                 return retval;
             }
             case LineKind::ARRAY_OF_TABLE_TITLE:
             {
-                is.seekg(current_pos);
+                is.seekg(line_head);
                 return retval;
             }
             case LineKind::KEY_VALUE:
@@ -179,6 +179,7 @@ Data parse(std::basic_istream<charT, traits>& is)
             }
             case LineKind::ARRAY_OF_TABLE_TITLE:
             {
+                // TODO
                 break;
             }
             case LineKind::KEY_VALUE:
