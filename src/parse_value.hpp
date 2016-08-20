@@ -203,6 +203,40 @@ split_array(const std::basic_string<charT, traits, alloc>& str)
     return splitted;
 }
 
+template<typename charT, typename traits, typename alloc>
+std::vector<std::basic_string<charT, traits, alloc>>
+split_table(const std::basic_string<charT, traits, alloc>& str)
+{
+// {foo = "some, string = sample", bar = [1, 2, 3], baz = {def = recursive}}
+// ["foo = "some, string = sample"", "bar = [1, 2, 3]", "baz = {}"]
+    typedef syntax_error<charT, traits, alloc> syntax_exception;
+    std::basic_string<charT, traits, alloc>::const_iterator iter = str.begin();
+    if(*iter != '{') throw syntax_exception(str);
+    ++iter;
+    std::vector<std::basic_string<charT, traits, alloc> > splitted;
+    while(iter != str.end())
+    {
+        // TODO
+    }
+    return splitted;
+}
+
+template<typename charT, typename traits, typename alloc>
+std::pair<std::basic_string<charT, traits, alloc>,
+          std::basic_string<charT, traits, alloc> >
+split_key_value(const std::basic_string<charT, traits, alloc>& str)
+{
+    // hoge = "key = value"
+    std::basic_string<charT, traits, alloc> key(
+            str.begin(), std::find(str.begin(), str.end(), '='));
+    std::basic_string<charT, traits, alloc> value(
+            std::find(str.begin(), str.end(), '=') + 1, str.end());
+    key   = remove_extraneous_whitespace(remove_indent(key));
+    value = remove_extraneous_whitespace(remove_indent(value));
+    
+    return std::make_pair(key, value);
+}
+
 // ---------------------------- implementation ---------------------------------
 
 template<typename charT, typename traits, typename alloc>
@@ -407,10 +441,13 @@ struct parse_value_impl<table_type, charT, traits, alloc>
     apply(const std::basic_string<charT, traits, alloc>& str)
     {
         std::shared_ptr<table_type> val = std::make_shared<table_type>();
-//         std::vector<std::basic_string<charT, traits, alloc>> splitted = 
-//             split_array(str);
-//         for(auto iter = splitted.cbegin(); iter != splitted.cend(); ++iter)
-//             val->value.push_back(parse_value(*iter));
+        std::vector<std::basic_string<charT, traits, alloc> > splitted = 
+            split_table(str);
+        for(auto iter = splitted.cbegin(); iter != splitted.cend(); ++iter)
+        {
+            std::pair<std::string, std::string> kv = split_key_value(*iter);
+            val->value[kv.first] = parse_value(kv.second);
+        }
         return val;
     }
 };
