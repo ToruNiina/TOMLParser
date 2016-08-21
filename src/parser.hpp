@@ -179,7 +179,15 @@ Data parse(std::basic_istream<charT, traits>& is)
             }
             case LineKind::ARRAY_OF_TABLE_TITLE:
             {
-                // TODO
+                const std::basic_string<charT, traits> table_title = 
+                    extract_table_title(line);
+                if(data.count(table_title) == 0)
+                    data[table_title] = std::make_shared<array_type>();
+                const std::shared_ptr<array_type> array_ptr = 
+                    std::dynamic_pointer_cast<array_type>(data[table_title]);
+                if(!array_ptr) throw internal_error<charT, traits,
+                    std::allocator<charT>>("dynamic_pointer_cast error");
+                array_ptr->value.push_back(parse_table(is));
                 break;
             }
             case LineKind::KEY_VALUE:
