@@ -1,18 +1,17 @@
 title = "sample"
 
-[table]
-a = true
-b = [1, 2,
-     3]
-c = "string"
-d = """
-    multi
-    string 
+[table] # this is sample.
+boolean           = true
+integer           = -100_000
+float             = +1.38e-23
+basic_string      = "basic \"string\""
+multi_line_string = """
+    multi line # this is comment.
+    string
     """
+array          = [1, 2, 3]
+array_of_array = [[1, 2], [3], [4,5,6]]
+inline_table   = {a = true, b = "string", c = ["a", "r", "r", "a", "y"]}
 
- [table2]
- a = false
- b = [true, true, false]
- c = 'literal'
- d = '''multi
-     literal'''
+[table2]
+basic_string = "you can define same key in different table"
