@@ -42,9 +42,8 @@ typename std::basic_string<charT, traits, alloc>::const_iterator
 find_bracket_close(
         typename std::basic_string<charT, traits, alloc>::const_iterator iter,
         const typename std::basic_string<charT, traits, alloc>::const_iterator end,
-        const charT close)
+        const charT open, const charT close)
 {
-    const charT open = *iter;
     int counter = 0;
     while(iter != end)
     {
@@ -105,11 +104,11 @@ find_value_end(
     typename std::basic_string<charT, traits, alloc>::const_iterator close;
     if(*begin == '[')
     {
-        close = find_bracket_close<charT, traits, alloc>(begin, end, ']');
+        close = find_bracket_close<charT, traits, alloc>(begin, end, '[', ']');
     }
     else if(*begin == '{')
     {
-        close = find_bracket_close<charT, traits, alloc>(begin, end, '}');
+        close = find_bracket_close<charT, traits, alloc>(begin, end, '{', '}');
     }
     else if(*begin == '\'')
     {
