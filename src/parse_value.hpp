@@ -196,9 +196,30 @@ split_table(const std::basic_string<charT, traits, alloc>& str)
     if(*iter != '{') throw syntax_exception(str);
     ++iter;
     std::vector<std::basic_string<charT, traits, alloc> > splitted;
+    std::basic_string<charT, traits, alloc> temp_key;
     while(iter != str.end())
     {
-        
+        temp_key += *iter;
+        if(*iter == '=')
+        {
+            ++iter;
+            while(*iter == ' ' || *iter == '\t'){temp_key += *iter; ++iter;}
+            const typename std::basic_string<charT, traits, alloc>::const_iterator
+                next = find_value_end<charT, traits, alloc>(iter, str.end());
+            const std::basic_string<charT, traits, alloc> value(iter, next+1);
+            iter = next + 1;
+            splitted.push_back(temp_key + value);
+            std::cout << "parsed inline table elem = " << temp_key + value << std::endl;
+            temp_key.clear();
+            while(*iter == ' ' || *iter == '\t'){++iter;}
+            if(*iter != ',' && *iter != '}')
+                throw syntax_exception("invalid table "+ str + " at " + *iter);
+            else ++iter;
+        }
+        else
+        {
+            ++iter;
+        }
     }
     return splitted;
 }
