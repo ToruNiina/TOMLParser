@@ -4,11 +4,11 @@ TOMLParser
 C++ header-only TOML Parser.
 
 development is now ongoing. some features of TOML listed below is not supported.
-- quated keys
-- inline table
-- array of table
-- escape sequence in basic string
-- include extraneous whitespace before '\' in multi-line basic string
+- [ ] quated keys
+- [x] inline table
+- [ ] array of table
+- [ ] escape sequence in basic string
+- [ ] include extraneous whitespace before '\' in multi-line basic string
 
 ## Usage
 
