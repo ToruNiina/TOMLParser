@@ -33,22 +33,15 @@ struct is_impl<Integer, charT, traits, alloc>
             iter = str.begin();
         if(*iter == '+' || *iter == '-') ++iter;
         bool underscore = false;
-        for(; iter != str.cend(); ++iter)
-        {
+        for(; iter != str.end(); ++iter)
             if(('0' <= *iter && *iter <= '9'))
-            {
                 underscore = false;
-            }
             else if(*iter == '_')
-            {// each underscore must be surrounded by at least one digit.
+                // each underscore must be surrounded by at least one digit.
                 if(underscore) return false;
-                underscore = true;
-            }
+                else underscore = true;
             else
-            {
                 return false;
-            }
-        }
         return true;
     }
 };
@@ -139,31 +132,29 @@ struct is_impl<Datetime, charT, traits, alloc>
 
         if(str.size() < 10) return false;
         std::basic_istringstream<charT, traits, alloc> iss(str);
-        if(!get_number_digit(iss, 4)) return false;
-        if(iss.get() != '-')          return false;
-        if(!get_number_digit(iss, 2)) return false;
-        if(iss.get() != '-')          return false;
-        if(!get_number_digit(iss, 2)) return false;
+        if(!read_number_digit(iss, 4))  return false;
+        if(iss.get() != '-')            return false;
+        if(!read_number_digit(iss, 2))  return false;
+        if(iss.get() != '-')            return false;
+        if(!read_number_digit(iss, 2))  return false;
+        if(iss.peek() == traits::eof()) return true;
 
-        if(iss.eof()) return true;
-        else if(str.size() < 18) return false;
-
-        if(iss.get() != 'T')          return false;
-        if(!get_number_digit(iss, 2)) return false;
-        if(iss.get() != ':')          return false;
-        if(!get_number_digit(iss, 2)) return false;
-        if(iss.get() != ':')          return false;
-        if(!get_number_digit(iss, 2)) return false;
-        if(iss.eof()) return true;
+        if(iss.get() != 'T')            return false;
+        if(!read_number_digit(iss, 2))  return false;
+        if(iss.get() != ':')            return false;
+        if(!read_number_digit(iss, 2))  return false;
+        if(iss.get() != ':')            return false;
+        if(!read_number_digit(iss, 2))  return false;
+        if(iss.peek() == traits::eof()) return true;
 
         const charT c = iss.get();
-             if(c == 'Z') return iss.eof();
+             if(c == 'Z' || c == 'z') return (iss.peek() == traits::eof());
         else if(c == '+' || c == '-')
         {
-            if(!get_number_digit(iss, 2)) return false;
-            if(iss.get() != ':')          return false;
-            if(!get_number_digit(iss, 2)) return false;
-            return iss.eof();
+            if(!read_number_digit(iss, 2)) return false;
+            if(iss.get() != ':')           return false;
+            if(!read_number_digit(iss, 2)) return false;
+            return (iss.peek() == traits::eof());
         }
         else if(c == '.')
         {
@@ -174,23 +165,23 @@ struct is_impl<Datetime, charT, traits, alloc>
             {
                 return true;
             }
-            else if(n == 'Z')
+            else if(n == 'Z' || n == 'z')
             {
-                return iss.eof();
+                return (iss.peek() == traits::eof());
             }
             else if(n == '+' || n == '-')
             {
-                if(!get_number_digit(iss, 2)) return false;
-                if(iss.get() != ':')          return false;
-                if(!get_number_digit(iss, 2)) return false;
-                return iss.eof();
+                if(!read_number_digit(iss, 2)) return false;
+                if(iss.get() != ':')           return false;
+                if(!read_number_digit(iss, 2)) return false;
+                return (iss.peek() == traits::eof());
             }
             else return false;
         }
         else return false;
     }
 
-    static bool get_number_digit(
+    static bool read_number_digit(
             std::basic_istringstream<charT, traits, alloc>& iss, 
             const std::size_t l)
     {
