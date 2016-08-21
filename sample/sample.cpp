@@ -18,19 +18,23 @@ int main(int argc, char **argv)
     std::string title = toml::get<toml::String>(data.at("title"));
     std::cout << "title = " << title << std::endl;
 
-    toml::Table table = toml::get<toml::Table>(data.at("table"));
-    bool boolean = toml::get<toml::Boolean>(table.at("boolean"));
-    std::int_least64_t integer = toml::get<toml::Integer>(table.at("integer"));
-    double floating_point = toml::get<toml::Float>(table.at("float"));
-    std::string basic_string = toml::get<toml::String>(table.at("basic_string"));
-    std::string multi_line_string = toml::get<toml::String>(table.at("multi_line_string"));
+    toml::Table                     table = toml::get<toml::Table>(data.at("table"));
+    bool                          boolean = toml::get<toml::Boolean>(table.at("boolean"));
+    std::int_least64_t            integer = toml::get<toml::Integer>(table.at("integer"));
+    double                 floating_point = toml::get<toml::Float>(table.at("float"));
+    std::string              basic_string = toml::get<toml::String>(table.at("basic_string"));
+    std::string         multi_line_string = toml::get<toml::String>(table.at("multi_line_string"));
     std::vector<std::int_least64_t> array = toml::get<toml::Array<toml::Integer>>(table.at("array"));
     std::vector<std::vector<std::int_least64_t>> array_of_array =
         toml::get<toml::Array<toml::Array<toml::Integer>>>(table.at("array_of_array"));
-    toml::Table inline_table = toml::get<toml::Table>(table.at("inline_table"));
-    bool a = toml::get<toml::Boolean>(inline_table.at("a"));
-    std::string b = toml::get<toml::String>(inline_table.at("b"));
+
+    toml::Table   inline_table = toml::get<toml::Table>(table.at("inline_table"));
+    bool                     a = toml::get<toml::Boolean>(inline_table.at("a"));
+    std::string              b = toml::get<toml::String>(inline_table.at("b"));
     std::vector<std::string> c = toml::get<toml::Array<toml::String>>(inline_table.at("c"));
+
+    std::vector<toml::Table> inline_array_of_table = 
+        toml::get<toml::Array<toml::Table>>(table.at("inline_array_of_table"));
 
     std::cout << "[table]" << std::endl;
     std::cout << "boolean = " << boolean << std::endl;
@@ -58,11 +62,23 @@ int main(int argc, char **argv)
     for(auto item : c)
         std::cout << item << ", ";
     std::cout << "]" << std::endl;
+    std::cout << "inline_array_of_table = {id = [";
+    for(auto item : inline_array_of_table)
+        std::cout << toml::get<toml::Integer>(item.at("id")) << ", ";
+    std::cout << "]}" << std::endl;
 
-    toml::Table table2 = toml::get<toml::Table>(data.at("table2"));
+    toml::Table        table2 = toml::get<toml::Table>(data.at("table2"));
     std::string basic_string2 = toml::get<toml::String>(table2.at("basic_string"));
     std::cout << "[table2]" << std::endl;
     std::cout << "basic_string = " << basic_string2 << std::endl;
+
+    std::vector<toml::Table> array_of_table =
+        toml::get<toml::Array<toml::Table>>(data.at("array_of_table"));
+    std::cout << "array_of_table = {index = [";
+    for(auto item : array_of_table)
+        std::cout << toml::get<toml::Integer>(item.at("index")) << ", ";
+    std::cout << "]}" << std::endl;
+
 
     }
     catch(std::exception& except)

@@ -5,7 +5,7 @@ C++ header-only TOML Parser.
 
 development is now ongoing. some features of TOML listed below is not supported.
 - quated keys
-- array of table
+- nested table with Dots
 - escape sequence in basic string
 - include extraneous whitespace before '\' in multi-line basic string
 
@@ -54,6 +54,8 @@ toml value types. You can get the value from shared pointer to value\_base using
     T toml::get<T>(std::shared_ptr<value_base> const&)
 
 function.
+
+to see more detailed usage, please see sample/sample.cpp and sample/sample.toml.
 
 ## Dependency
 
