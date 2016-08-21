@@ -8,9 +8,14 @@
 namespace toml
 {
 
+/*! @brief implementation of parse_value. to use partial specialization.      */
 template<typename T, typename charT, typename traits, typename alloc>
 struct parse_value_impl;
 
+/*! @brief make value from string and return shared_ptr to the value.         *
+ *  @param str string descripting the value.                                  *
+ *  @return shared_ptr to the value casted to ptr to value_base.              *
+ *  if the string does not match any toml-type, throw syntax_error exception. */
 template<typename charT, typename traits, typename alloc>
 std::shared_ptr<value_base>
 parse_value(const std::basic_string<charT, traits, alloc>& str)
@@ -33,10 +38,13 @@ parse_value(const std::basic_string<charT, traits, alloc>& str)
         throw syntax_error<charT, traits, alloc>("unknown type " + str);
 }
 
-// ---------------------------- utility functions -----------------------------
-
-// return iterator that points the brace that enclose the block.
-// iter-> '['[1,2], [3,4], [5,6]']' <- retval
+/*! @brief return iterator points to brace or bracket that enclose the block. *
+ *  @param iter  points to the front of the value.                            *
+ *  @param end   points to the end of the value. (end. not back.)             *
+ *  @param open  brace that indicates the begin of the block.                 *
+ *  @param close brace that indicates the end of the block.                   *
+ *  @return iterator that points to the brace that indicates the end of block *
+ *  (ex.) iter-> '['[1,2], [3,4], [5,6]']' <- retval                          */
 template<typename charT, typename traits, typename alloc>
 typename std::basic_string<charT, traits, alloc>::const_iterator
 find_bracket_close(
@@ -55,6 +63,12 @@ find_bracket_close(
     return iter;
 }
 
+/* @brief find end of the string value. but returns the last " of the string. *
+ * @param begin iterator points to the " or ' mark indicating begin of value  *
+ * @param end   iterator points to the end of the string                      *
+ * @param quat  quatation mark of the string. usually " or '.                 *
+ * @return iterator that points to the " or ' mark indicating end of value.   *
+ * if fail to find the end of string value, return end.                       */
 template<typename charT, typename traits, typename alloc>
 typename std::basic_string<charT, traits, alloc>::const_iterator
 find_string_end(
@@ -73,6 +87,13 @@ find_string_end(
     return begin;
 }
 
+/* @brief return end of multi-line string value. like find_string_end func.   *
+ * @param begin iterator points to the " or ' mark indicating begin of value  *
+ * @param end   iterator points to the end of the string                      *
+ * @param quat  quatation mark of the string. usually " or '.                 *
+ * @return iterator that points to the " or ' mark indicating end of value.   *
+ * if the distance between begin and end is lesser than 3, throw syntax_error *
+ * exception. If fail to find the end of multi-line string value, return end. */
 template<typename charT, typename traits, typename alloc>
 typename std::basic_string<charT, traits, alloc>::const_iterator
 find_multi_string_end(
@@ -84,7 +105,6 @@ find_multi_string_end(
     if(std::distance(begin, end) < 3)
         throw syntax_exception("not multi string line " +
                 std::basic_string<charT, traits, alloc>(begin, end));
-
     while(begin+2 != end)
     {
         if(*begin == quat && *(begin + 1) == quat && *(begin + 2) == quat)
@@ -94,6 +114,13 @@ find_multi_string_end(
     return begin;
 }
 
+/* @brief find the end of value.                                              *
+ * @param begin iterator points to the begin of string encoding some value.   *
+ * @param end iterator points to the end of string encoding some value.       *
+ * @return iterator points to the end of the value.                           *
+ * the main purpose of this function is to split array or inline-table. To    *
+ * perse those value, parser should be able to split line into value or       *
+ * key-value pair parts that can include commas.                              */
 template<typename charT, typename traits, typename alloc>
 typename std::basic_string<charT, traits, alloc>::const_iterator
 find_value_end(
@@ -103,37 +130,19 @@ find_value_end(
     typedef syntax_error<charT, traits, alloc> syntax_exception;
     typename std::basic_string<charT, traits, alloc>::const_iterator close;
     if(*begin == '[')
-    {
         close = find_bracket_close<charT, traits, alloc>(begin, end, '[', ']');
-    }
     else if(*begin == '{')
-    {
         close = find_bracket_close<charT, traits, alloc>(begin, end, '{', '}');
-    }
     else if(*begin == '\'')
-    {
-        if(std::distance(begin, end) > 3 &&
-           *(begin+1) == '\'' && *(begin+2) == '\'')
-        {
+        if(std::distance(begin, end) > 3 && *(begin+1) == '\'' && *(begin+2) == '\'')
             close = find_multi_string_end<charT, traits, alloc>(begin+3, end, '\'');
-        }
         else
-        {
             close = find_string_end<charT, traits, alloc>(begin+1, end, '\'');
-        }
-    }
     else if(*begin == '\"')
-    {
-         if(std::distance(begin, end) > 3 &&
-            *(begin+1) == '\"' && *(begin+2) == '\"')
-        {
+        if(std::distance(begin, end) > 3 && *(begin+1) == '\"' && *(begin+2) == '\"')
             close = find_multi_string_end<charT, traits, alloc>(begin+3, end, '\"');
-        }
         else
-        {
             close = find_string_end<charT, traits, alloc>(begin+1, end, '\"');
-        }   
-    }
     else // other values
     {
         close = begin;
@@ -149,7 +158,9 @@ find_value_end(
     return close;
 }
 
-// split array string into vector of element strings.
+/* @brief split array string into vector of element strings.                  *
+ * @param string that codes complete array.                                   * 
+ * @return vector that contains string and each string codes value.           */
 template<typename charT, typename traits, typename alloc>
 std::vector<std::basic_string<charT, traits, alloc>>
 split_array(const std::basic_string<charT, traits, alloc>& str)
@@ -185,6 +196,9 @@ split_array(const std::basic_string<charT, traits, alloc>& str)
     return splitted;
 }
 
+/* @brief split inline-table string into vector of key-value pair strings.    *
+ * @param string that codes complete inline-table.                            * 
+ * @return vector that contains string and each string codes key-value pair.  */
 template<typename charT, typename traits, typename alloc>
 std::vector<std::basic_string<charT, traits, alloc>>
 split_table(const std::basic_string<charT, traits, alloc>& str)
@@ -223,6 +237,9 @@ split_table(const std::basic_string<charT, traits, alloc>& str)
     return splitted;
 }
 
+/* @brief split key-value string into pair of strings coding key and value.   *
+ * @param string that codes complete key-value pair.                          *
+ * @return pair of strings that codes key and value.                          */
 template<typename charT, typename traits, typename alloc>
 std::pair<std::basic_string<charT, traits, alloc>,
           std::basic_string<charT, traits, alloc> >
@@ -328,25 +345,25 @@ struct parse_value_impl<Datetime, charT, traits, alloc>
         std::basic_istringstream<charT, traits, alloc> iss(str);
 
         std::tm t;
-        t.tm_year = std::stoi(get_word(iss, 4)) - 1900;// yyyy
-        if(iss.get() != '-') throw internal_exception("-");// -
-        t.tm_mon  = std::stoi(get_word(iss, 2)) - 1;   // mm
-        if(iss.get() != '-') throw internal_exception("-");// -
-        t.tm_mday = std::stoi(get_word(iss, 2));       // dd
+        t.tm_year = std::stoi(get_word(iss, 4)) - 1900;
+        if(iss.get() != '-') throw internal_exception("-");
+        t.tm_mon  = std::stoi(get_word(iss, 2)) - 1;
+        if(iss.get() != '-') throw internal_exception("-");
+        t.tm_mday = std::stoi(get_word(iss, 2));
 
-        if(iss.eof())
+        if(iss.peek() == traits::eof())
         {
             t.tm_sec  = 0; t.tm_min  = 0; t.tm_hour = 0;
             val->value = std::chrono::system_clock::from_time_t(make_local(t));
             return val;
         }
 
-        if(iss.get() != 'T') throw internal_exception("T");// T
-        t.tm_hour = std::stoi(get_word(iss, 2));      // hh
-        if(iss.get() != ':') throw internal_exception(":");// :
-        t.tm_min  = std::stoi(get_word(iss, 2));      // mm
-        if(iss.get() != ':') throw internal_exception(":");// :
-        t.tm_sec  = std::stoi(get_word(iss, 2));      // ss
+        if(iss.get() != 'T') throw internal_exception("T");
+        t.tm_hour = std::stoi(get_word(iss, 2));
+        if(iss.get() != ':') throw internal_exception(":");
+        t.tm_min  = std::stoi(get_word(iss, 2));
+        if(iss.get() != ':') throw internal_exception(":");
+        t.tm_sec  = std::stoi(get_word(iss, 2));
 
         bool secfrac = false;
         std::chrono::microseconds sfrac;
@@ -435,7 +452,6 @@ struct parse_value_impl<array_type, charT, traits, alloc>
     }
 };
 
-// TODO: parse inline table
 template<typename charT, typename traits, typename alloc>
 struct parse_value_impl<table_type, charT, traits, alloc>
 {
