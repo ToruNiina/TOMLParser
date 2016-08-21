@@ -3,6 +3,13 @@ TOMLParser
 
 C++ header-only TOML Parser.
 
+development is now ongoing. some features of TOML listed below is not supported.
+- quated keys
+- inline table
+- array of table
+- escape sequence in basic string
+- include extraneous whitespace before '\' in multi-line basic string
+
 ## Usage
 
 You can easily see how to use this library if you read the following code.
@@ -49,7 +56,7 @@ toml value types. You can get the value from shared pointer to value\_base using
 
 function.
 
-### Dependency
+## Dependency
 
 Core codes depend on c++11 standard library only.
 
