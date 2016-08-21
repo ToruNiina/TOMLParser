@@ -51,6 +51,7 @@ find_bracket_close(
              if(*iter == open)  ++counter;
         else if(*iter == close) --counter;
         if(counter == 0) break;
+        ++iter;
     }
     return iter;
 }
@@ -209,7 +210,6 @@ split_table(const std::basic_string<charT, traits, alloc>& str)
             const std::basic_string<charT, traits, alloc> value(iter, next+1);
             iter = next + 1;
             splitted.push_back(temp_key + value);
-            std::cout << "parsed inline table elem = " << temp_key + value << std::endl;
             temp_key.clear();
             while(*iter == ' ' || *iter == '\t'){++iter;}
             if(*iter != ',' && *iter != '}')
