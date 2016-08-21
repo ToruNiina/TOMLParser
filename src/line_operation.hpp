@@ -147,43 +147,6 @@ get_number(std::basic_istringstream<charT, traits, alloc>& iss)
     return retval;
 }
 
-// return iterator that points the brace that enclose the block.
-// iter-> '['[1,2], [3,4], [5,6]']' <- retval
-template<typename charT, typename traits, typename alloc>
-typename std::basic_string<charT, traits, alloc>::const_iterator
-next_close(typename std::basic_string<charT, traits, alloc>::const_iterator iter,
-           const typename std::basic_string<charT, traits, alloc>::const_iterator end,
-           const charT close)
-{
-    const charT open = *iter;
-    int counter = 0;
-    while(iter != end)
-    {
-             if(*iter == open)  ++counter;
-        else if(*iter == close) --counter;
-        if(counter == 0) break;
-    }
-    return iter;
-}
-
-// for """ and ''' case.
-template<typename charT, typename traits, typename alloc>
-typename std::basic_string<charT, traits, alloc>::const_iterator
-next_close(typename std::basic_string<charT, traits, alloc>::const_iterator iter,
-           const typename std::basic_string<charT, traits, alloc>::const_iterator end,
-           const typename std::basic_string<charT, traits, alloc> close)
-{
-    if(std::distance(iter, end) < close.size())
-        throw internal_error<charT, traits, alloc>("never close");
-    std::size_t len = close.size()-1;
-    while(iter + len != end)
-    {
-        if(std::basic_string<charT, traits, alloc>(iter, iter+len) == close)
-            return iter+len;
-        ++iter;
-    }
-    return end;
-}
 
 }//toml
 #endif /* TOML_STRING_UTILITY */

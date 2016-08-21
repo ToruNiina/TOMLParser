@@ -35,6 +35,120 @@ parse_value(const std::basic_string<charT, traits, alloc>& str)
 
 // ---------------------------- utility functions -----------------------------
 
+// return iterator that points the brace that enclose the block.
+// iter-> '['[1,2], [3,4], [5,6]']' <- retval
+template<typename charT, typename traits, typename alloc>
+typename std::basic_string<charT, traits, alloc>::const_iterator
+find_bracket_close(
+        typename std::basic_string<charT, traits, alloc>::const_iterator iter,
+        const typename std::basic_string<charT, traits, alloc>::const_iterator end,
+        const charT close)
+{
+    const charT open = *iter;
+    int counter = 0;
+    while(iter != end)
+    {
+             if(*iter == open)  ++counter;
+        else if(*iter == close) --counter;
+        if(counter == 0) break;
+    }
+    return iter;
+}
+
+template<typename charT, typename traits, typename alloc>
+typename std::basic_string<charT, traits, alloc>::const_iterator
+find_string_end(
+        typename std::basic_string<charT, traits, alloc>::const_iterator begin,
+        const typename std::basic_string<charT, traits, alloc>::const_iterator end,
+        const charT quat)
+{
+    bool esc = false;
+    while(begin != end)
+    {
+             if(*begin == '\\')           esc = true;
+        else if(*begin == quat && (!esc)) break;
+        else                              esc = false;
+        ++begin;
+    }
+    return begin;
+}
+
+template<typename charT, typename traits, typename alloc>
+typename std::basic_string<charT, traits, alloc>::const_iterator
+find_multi_string_end(
+        typename std::basic_string<charT, traits, alloc>::const_iterator begin,
+        const typename std::basic_string<charT, traits, alloc>::const_iterator end,
+        const charT quat)
+{
+    typedef syntax_error<charT, traits, alloc> syntax_exception;
+    if(std::distance(begin, end) < 3)
+        throw syntax_exception("not multi string line " +
+                std::basic_string<charT, traits, alloc>(begin, end));
+
+    while(begin+2 != end)
+    {
+        if(*begin == quat && *(begin + 1) == quat && *(begin + 2) == quat)
+            return begin + 2;
+        ++begin;
+    }
+    return begin;
+}
+
+template<typename charT, typename traits, typename alloc>
+typename std::basic_string<charT, traits, alloc>::const_iterator
+find_value_end(
+       const typename std::basic_string<charT, traits, alloc>::const_iterator begin, 
+       const typename std::basic_string<charT, traits, alloc>::const_iterator end)
+{
+    typedef syntax_error<charT, traits, alloc> syntax_exception;
+    typename std::basic_string<charT, traits, alloc>::const_iterator close;
+    if(*begin == '[')
+    {
+        close = find_bracket_close<charT, traits, alloc>(begin, end, ']');
+    }
+    else if(*begin == '{')
+    {
+        close = find_bracket_close<charT, traits, alloc>(begin, end, '}');
+    }
+    else if(*begin == '\'')
+    {
+        if(std::distance(begin, end) > 3 &&
+           *(begin+1) == '\'' && *(begin+2) == '\'')
+        {
+            close = find_multi_string_end<charT, traits, alloc>(begin+3, end, '\'');
+        }
+        else
+        {
+            close = find_string_end<charT, traits, alloc>(begin+1, end, '\'');
+        }
+    }
+    else if(*begin == '\"')
+    {
+         if(std::distance(begin, end) > 3 &&
+            *(begin+1) == '\"' && *(begin+2) == '\"')
+        {
+            close = find_multi_string_end<charT, traits, alloc>(begin+3, end, '\"');
+        }
+        else
+        {
+            close = find_string_end<charT, traits, alloc>(begin+1, end, '\"');
+        }   
+    }
+    else // other values
+    {
+        close = begin;
+        while(close != end)
+        {
+            if(*(close + 1) == ' ' || *(close + 1) == ',' ||
+               *(close + 1) == ']' || *(close + 1) == '}') break;
+            ++close;
+        }
+    }
+    if(close == end) throw syntax_exception("not value: " + 
+            std::basic_string<charT, traits, alloc>(begin, end));
+    return close;
+}
+
 // split array string into vector of element strings.
 template<typename charT, typename traits, typename alloc>
 std::vector<std::basic_string<charT, traits, alloc>>
@@ -42,82 +156,14 @@ split_array(const std::basic_string<charT, traits, alloc>& str)
 {
     using syntax_exception = syntax_error<charT, traits, alloc>;
     auto iter = str.cbegin();
-    if(*iter != '[') throw syntax_exception(str);
+    if(*iter != '[') throw syntax_exception("not array: " + str);
     ++iter;
-    std::vector<std::basic_string<charT, traits, alloc>> splitted;
+    std::vector<std::basic_string<charT, traits, alloc> > splitted;
     while(iter != str.cend())
     {
-        if(*iter == '[')
+        if(*iter == ']')
         {
-            auto close = next_close<charT, traits, alloc>(iter, str.cend(), ']');
-            if(close == str.cend()) throw syntax_exception(str);
-            splitted.emplace_back(iter, close+1);
-            iter = close + 1;
-            while(*iter == ' ' || *iter == '\t'){++iter;}
-            if(*iter != ',' && *iter != ']') throw syntax_exception(str);
-            ++iter;
-        }
-        else if(*iter == '{')
-        {
-            auto close = next_close<charT, traits, alloc>(iter, str.cend(), '}');
-            if(close == str.cend()) throw syntax_exception(str);
-            splitted.emplace_back(iter, close+1);
-            iter = close + 1;
-            while(*iter == ' ' || *iter == '\t'){++iter;}
-            if(*iter != ',' && *iter != ']') throw syntax_exception(str);
-            ++iter;
-        }
-        else if(*iter == '\'')
-        {
-            if(*(iter+1) == '\'' && *(iter+2) == '\'')
-            {
-                auto close = next_close<charT, traits, alloc>(iter+3, str.cend(),
-                        std::basic_string<charT, traits, alloc>("\'\'\'"));
-                if(close == str.cend()) throw syntax_exception(str);
-                splitted.emplace_back(iter, close+1);
-                iter = close + 1;
-                while(*iter == ' ' || *iter == '\t'){++iter;}
-                if(*iter != ',' && *iter != ']') throw syntax_exception(str);
-                ++iter;
-            }
-            else
-            {
-                auto close = std::find(iter+1, str.cend(), '\'');
-                if(close == str.cend()) throw syntax_exception(str);
-                splitted.emplace_back(iter, close+1);
-                iter = close + 1;
-                while(*iter == ' ' || *iter == '\t'){++iter;}
-                if(*iter != ',' && *iter != ']') throw syntax_exception(str);
-                ++iter;
-            }
-        }
-        else if(*iter == '\"')
-        {
-            if(*(iter+1) == '\"' && *(iter+2) == '\"')
-            {
-                auto close = next_close<charT, traits, alloc>(iter+3, str.cend(),
-                        std::basic_string<charT, traits, alloc>("\"\"\""));
-                if(close == str.cend()) throw syntax_exception(str);
-                splitted.emplace_back(iter, close+1);
-                iter = close + 1;
-                while(*iter == ' ' || *iter == '\t'){++iter;}
-                if(*iter != ',' && *iter != ']') throw syntax_exception(str);
-                ++iter;
-            }
-            else
-            {
-                auto close = std::find(iter+1, str.cend(), '\"');
-                if(close == str.cend()) throw syntax_exception(str);
-                splitted.emplace_back(iter, close+1);
-                iter = close + 1;
-                while(*iter == ' ' || *iter == '\t'){++iter;}
-                if(*iter != ',' && *iter != ']') throw syntax_exception(str);
-                ++iter;
-            }
-        }
-        else if(*iter == ']')
-        {
-            break;// other part passes only valid(closed) array string
+            break;
         }
         else if(*iter == ' ')
         {
@@ -125,15 +171,15 @@ split_array(const std::basic_string<charT, traits, alloc>& str)
         }
         else
         {
-            auto delim = std::find(iter, str.cend(), ',');
-            if(delim == str.cend())// [... , last-value]
-                splitted.emplace_back(iter, std::find(iter, str.cend(), ']'));
-            else 
-                splitted.emplace_back(iter, delim);
-            splitted.back() = // remove needless whitespace
-                remove_extraneous_whitespace(remove_indent(splitted.back()));
-            iter = delim;
-            if(iter != str.cend()) ++iter;
+            const typename std::basic_string<charT, traits, alloc>::const_iterator
+                next = find_value_end<charT, traits, alloc>(iter, str.end());
+            std::basic_string<charT, traits, alloc> value(iter, next+1);
+            splitted.push_back(value);
+            iter = next + 1;
+            while(*iter == ' ' || *iter == '\t'){++iter;}// remove 
+            if(*iter != ',' && *iter != ']')
+                throw syntax_exception("invalid array: " + str);
+            ++iter;
         }
     }
     return splitted;
@@ -152,7 +198,7 @@ split_table(const std::basic_string<charT, traits, alloc>& str)
     std::vector<std::basic_string<charT, traits, alloc> > splitted;
     while(iter != str.end())
     {
-        // TODO
+        
     }
     return splitted;
 }
