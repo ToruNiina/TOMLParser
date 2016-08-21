@@ -95,7 +95,7 @@ struct is_impl<Float, charT, traits, alloc>
             else if(*iter == '.')
             {
                 if(underscore) return false;
-                if(!flag_eE)   return false;
+                if(flag_eE)    return false;
             }
             else return false;
         }
