@@ -15,6 +15,7 @@ You can easily see how to use this library if you read the following code.
 
     #include "toml.hpp"
     #include <fstream>
+
     std::ifstream file("sample.toml");
     toml::Data                      data  = toml::parse(file);
     std::string                     title = toml::get<toml::String>(data.at("title"));
@@ -23,11 +24,11 @@ You can easily see how to use this library if you read the following code.
     
     std::int_least64_t              foo   = toml::get<toml::Integer>(table.at("foo"));
     std::vector<double>             bar   = toml::get<toml::Array<Float>>(table.at("bar"));
-    std::vector<std::vector<bool>>  baz   = toml::get<toml::Array<toml::Array<Boolean>>(table.at("baz"));
+    std::vector<std::vector<bool>>  baz   = toml::get<toml::Array<toml::Array<Boolean>>>(table.at("baz"));
     toml::Table                     qux   = toml::get<toml::Table>(table.at("qux"));
-    std::string                     name  = toml::get<toml::String>(qux.at("name")); 
+    std::string                     quux  = toml::get<toml::String>(qux.at("quux")); 
 
-this code can read the following toml file.
+you can parse the following toml file with this code.
 
     # sample.toml
     title = "this is sample"
@@ -35,9 +36,9 @@ this code can read the following toml file.
     [table]
     foo = +100_000
     bar = [-1.1e+2, 2.0, 3.0]
-    baz = [[true, false], # this is comment.
+    baz = [[true, false], # this is a comment.
            [true], [false]]
-    qux = {name = "inline table"}
+    qux = {quux = "inline table"}
 
     [[array_of_table]]
     foobar = 1
