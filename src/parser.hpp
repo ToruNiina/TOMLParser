@@ -18,12 +18,61 @@ enum class LineKind
     UNKNOWN,
 };
 
+// return next to the end of string
 template<typename charT, typename traits, typename alloc>
-inline std::basic_string<charT, traits, alloc>
+typename std::basic_string<charT, traits, alloc>::const_iterator
+advance_until_end_of_string(
+        typename std::basic_string<charT, traits, alloc>::const_iterator iter,
+  const typename std::basic_string<charT, traits, alloc>::const_iterator end,
+        const charT quat)
+{
+    if(std::distance(iter, end) >= 6 &&
+       *iter == quat && *(iter+1) == quat && *(iter+2) == quat)
+    {
+        iter = iter + 3;
+        while(iter != end)
+        {
+            if(*iter == quat && *(iter+1) == quat && *(iter+2) == quat)
+                return iter+3;
+            else ++iter;
+        }
+    }
+    else 
+    {
+        bool esc_flag = false;
+        while(iter != end)
+        {
+            if(*iter == quat && (!esc_flag)) return iter + 1;
+            else if(*iter == '\\')
+                esc_flag = true;
+            else 
+                esc_flag = false;
+            ++iter;
+        }
+    }
+    return iter;
+}
+
+template<typename charT, typename traits, typename alloc>
+std::basic_string<charT, traits, alloc>
 remove_comment(const std::basic_string<charT, traits, alloc>& line)
 {
-    return std::basic_string<charT, traits, alloc>(line.cbegin(),
-            std::find(line.cbegin(), line.cend(), '#'));
+    // string = "some string including \" and # case" # and this is a comment.
+    // [table.using."quated".title.and.includes."#".and."]".case] # comment
+    typename std::basic_string<charT, traits, alloc>::const_iterator
+        iter = line.begin();
+    while(iter != line.end())
+    {
+        while(*iter == ' ' || *iter == '\t'){++iter;}
+        if(*iter == '"')
+            iter = advance_until_end_of_string<charT, traits, alloc>(iter, line.end(), '"');
+        else if(*iter == '\'')
+            iter = advance_until_end_of_string<charT, traits, alloc>(iter, line.end(), '\'');
+        else if(*iter == '#')
+            break;
+        else ++iter;
+    }
+    return std::basic_string<charT, traits, alloc>(line.begin(), iter);
 }
 
 template<typename charT, typename traits>
