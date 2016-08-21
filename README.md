@@ -19,18 +19,32 @@ You can easily see how to use this library if you read the following code.
     toml::Data                      data  = toml::parse(file);
     std::string                     title = toml::get<toml::String>(data.at("title"));
     toml::Table                     table = toml::get<toml::Table>(data.at("table"));
-    bool                            foo   = toml::get<toml::Boolean>(table.at("foo"));
+    std::vector<toml::Table>        array = toml::get<toml::Array<toml::Table>>(data.at("array_of_table"));
+    
+    std::int_least64_t              foo   = toml::get<toml::Integer>(table.at("foo"));
     std::vector<double>             bar   = toml::get<toml::Array<Float>>(table.at("bar"));
-    std::vector<std::int_least64_t> baz   = toml::get<toml::Array<Integer>>(table.at("baz"));
+    std::vector<std::vector<bool>>  baz   = toml::get<toml::Array<toml::Array<Boolean>>(table.at("baz"));
+    toml::Table                     qux   = toml::get<toml::Table>(table.at("qux"));
+    std::string                     name  = toml::get<toml::String>(qux.at("name")); 
 
 this code can read the following toml file.
 
     # sample.toml
     title = "this is sample"
+
     [table]
-    foo = true
-    bar = [1.0, 2.0, 3.0]
-    baz = [100_000, 200_000, 300_000_000]
+    foo = +100_000
+    bar = [-1.1e+2, 2.0, 3.0]
+    baz = [[true, false], # this is comment.
+           [true], [false]]
+    qux = {name = "inline table"}
+
+    [[array_of_table]]
+    foobar = 1
+    [[array_of_table]]
+    foobar = 2
+    [[array_of_table]]
+    foobar = 3
 
 Supported TOML types are listed below.
 All the supported toml-type are in the namespace "toml".
