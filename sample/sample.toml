@@ -6,11 +6,12 @@ integer           = -100_000
 float             = +1.38e-23
 basic_string      = "basic \"string\""
 multi_line_string = """
-    multi line # this is comment.
+    multi line
     string
     """
 array          = [1, 2, 3]
-array_of_array = [[1, 2], [3], [4,5,6]]
+array_of_array = [[1, 2], # this is comment.
+                  [3], [4,5,6]]
 inline_table   = {a = true, b = "string", c = ["a", "r", "r", "a", "y"]}
 
 [table2]
