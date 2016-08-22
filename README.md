@@ -3,6 +3,8 @@ TOMLParser
 
 C++ header-only TOML Parser.
 
+now, this library support only c++11 or later.
+
 development is now ongoing. some features of TOML listed below is not supported.
 - quated keys
 - nested table with Dots
