@@ -1,6 +1,7 @@
 #ifndef TOML_UTF_CODEPOINT
 #define TOML_UTF_CODEPOINT
 #include <string>
+#include <cstdint>
 
 namespace toml
 {
@@ -9,7 +10,7 @@ template<typename charT, typename traits, typename alloc>
 std::basic_string<charT, traits, alloc>
 utf8_to_char(const std::basic_string<charT, traits, alloc>& str)
 {
-    uint32_t codepoint;
+    std::uint_least32_t codepoint;
     std::basic_istringstream<charT, traits, alloc> iss(str);
     iss >> std::hex >> codepoint;
 
