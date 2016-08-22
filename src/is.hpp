@@ -66,18 +66,31 @@ struct is_impl<Float, charT, traits, alloc>
         for(; iter != str.end(); ++iter)
         {
             if(('0' <= *iter && *iter <= '9'))
+            {
                 underscore = false;
+            }
             else if(*iter == '_')
+            {
                 if(underscore) return false;
                 else underscore = true;
+            }
             else if(*iter == 'e' || *iter == 'E')
+            {
                 if(underscore) return false;
                 else flag_eE = true;
+            }
             else if(*iter == '+' || *iter == '-')
+            {
                 if(underscore || !flag_eE) return false;
+            }
             else if(*iter == '.')
+            {
                 if(underscore || flag_eE) return false;
-            else return false;
+            }
+            else
+            {
+                return false;
+            }
         }
         return true;
     }
