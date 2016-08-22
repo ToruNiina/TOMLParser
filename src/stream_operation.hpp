@@ -2,6 +2,7 @@
 #define TOML_STREAM_OPERATION
 #include <istream>
 #include <string>
+#include <vector>
 #include "exceptions.hpp"
 #include "escape_sequence.hpp"
 #include "line_operation.hpp"
@@ -54,6 +55,23 @@ bool is_escape_sequence(const charT c, std::basic_istream<charT, traits>& is)
         case 'U':  return true;
         default:   return false;
     }
+}
+
+template<typename charT, typename traits>
+std::basic_istream<charT, traits>&
+skip_whitespace(std::basic_istream<charT, traits>& is)
+{
+    while(is_whitespace(is.peek())){is.ignore();}
+    return is;
+}
+
+template<typename charT, typename traits>
+std::basic_istream<charT, traits>&
+skip_comment(std::basic_istream<charT, traits>& is)
+{
+    if(is.get() != '#') throw internal_error<charT>("not comment");
+    while(is.get() != '\n'){/*do nothing */;}
+    return is;
 }
 
 /* @brief read inline basic_string from is and return the string with quote. */
@@ -115,7 +133,7 @@ read_multiline_basic_string(std::basic_istream<charT, traits>& is)
 
     bool quote_flag = false;
     // read until """
-    while(is.eof())
+    while(!is.eof())
     {
         raw += is.get();
         if(raw.back() == '\"')
@@ -179,7 +197,7 @@ read_multiline_literal_string(std::basic_istream<charT, traits>& is)
 
     bool quote_flag = false;
     // read until '''
-    while(is.eof())
+    while(!is.eof())
     {
         raw += is.get();
         if(raw.back() == '\'')
@@ -260,32 +278,144 @@ read_string_value(std::basic_istream<charT, traits>& is)
         throw internal_error<char>("not toml string value");
 }
 
+template<typename charT, typename traits>
+std::basic_string<charT, traits>
+read_array(std::basic_istream<charT, traits>& is)
+{
+    std::basic_string<charT, traits> array_str;
+    array_str += is.get();
+    if(array_str.front() != '[')
+        throw internal_error<charT>("not TOML Array value");
+    while(!is.eof())
+    {
+        array_str += is.get();
+        if(is_closed(array_str, '[', ']')) break;
+    }
+    return array_str;
+}
+
+template<typename charT, typename traits>
+std::basic_string<charT, traits>
+read_inline_table(std::basic_istream<charT, traits>& is)
+{
+    std::basic_string<charT, traits> table_str;
+    table_str += is.get();
+    if(table_str.front() != '{')
+        throw internal_error<charT>("not TOML Array value");
+    while(!is.eof())
+    {
+        table_str += is.get();
+        if(is_closed(table_str, '{', '}')) break;
+    }
+    return table_str;
+}
+
+// for Boolean, Integer, Float, Datetime
+template<typename charT, typename traits>
+std::basic_string<charT, traits>
+read_simple_value(std::basic_istream<charT, traits>& is)
+{
+    std::basic_string<charT, traits> value_str;
+    while(!is.eof())
+    {
+        table_str += is.get();
+        if(is.peek() == ' '  || is.peek() == '\t' || is.peek() == ',' ||
+           is.peek() == '\n' || is.peek() == '\r' || is.peek() == '#' ||
+           is.peek() == ']'  || is.peek() == '}') break;
+    }
+    return table_str;
+}
+
+template<typename charT, typename traits>
+std::basic_string<charT, traits>
+read_value(std::basic_istream<charT, traits>& is)
+{
+    if(is.peek() == '\"' || is.peek() == '\'')
+        return read_string_value(is);
+    else if(is.peek() == '[')
+        return read_array(is);
+    else if(is.peek() == '{')
+        return read_inline_table(is);
+    else
+        return read_simple_value(is);
+}
+
+template<typename charT, typename traits>
+std::basic_string<charT, traits>
+read_bare_key(std::basic_istream<charT, traits>& is)
+{
+    std::basic_string<charT, traits> key;
+    while(is_bare_key_component(is.peek()) && !is.eof())
+    {
+        key += is.get();
+    }
+    return key;
+}
+
 // assert (next statement is key-value pair)
 template<typename charT, typename traits>
 std::basic_string<charT, traits>
 read_key(std::basic_istream<charT, traits>& is)
 {
     std::basic_string<charT, traits> key_string;
-    charT charactor;
-    while(is.peek() == ' ' || is.peek() == '\t'){charactor = is.get();}
     if(is.peek() == '\'' || is.peek() == '\"')
     {
         key_string = read_string_value(is);
     }
     else if(is_bare_key_component(is.peek()))
     {
-        charactor = is.get();
-        while(is_bare_key_component(charactor))
-        {
-            key_string += charactor;
-            charactor = is.get();
-        }
+        key_string = read_bare_key(is);
     }
     else throw syntax_error<charT, traits, alloc>("invalid key");
 
     return key_string;
 }
 
+template<typename charT, typename traits>
+std::vector<std::basic_string<charT, traits> >
+read_table_title(std::basic_istream<charT, traits>& is)
+{
+    std::vector<std::basic_string<charT, traits> > table_title;
+    std::basic_string<charT, traits> title_key;
+    if(is.peek() != '[')
+        throw internal_error<charT>("not TOML table title");
+    is.ignore();
+    if(is.peek() == '[') is.ignore();
+    while(!is.eof())
+    {
+        if(is.peek() ==  ']')
+        {
+            is.ignore();
+            table_title.push_back(title_key);
+            break;
+        }
+        else if(is.peek() == '.')
+        {
+            is.ignore();
+            table_title.push_back(title_key);
+            titile_key = read_key(is);
+        }
+        else
+        {
+            titile_key = read_key(is);
+        }
+    }
+    return table_title;
 }
+
+template<typename charT, typename traits>
+std::pair<std::basic_string<charT, traits>, std::basic_string<charT, traits> >
+read_key_value_pair(std::basic_istream<charT, traits>& is)
+{
+    std::basic_string<charT, traits> key = read_key(is);
+    skip_whitespace(is);
+    if(is.get() != '=')
+        throw syntax_error<charT>("missing = in key :" + key);
+    skip_whitespace(is);
+    std::basic_string<charT, traits> value = read_value(is);
+    return std::make_pair(key, value);
+}
+
+}//toml
 
 #endif /* TOML_STREAM_OPERATION */
