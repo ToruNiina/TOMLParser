@@ -2,7 +2,7 @@
 #define TOML_PARSE_VALUE
 #include "definitions.hpp"
 #include "toml_values.hpp"
-#include "utfcodepoint.hpp"
+#include "escape_sequence.hpp"
 #include "is.hpp"
 #include <algorithm>
 
