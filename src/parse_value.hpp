@@ -36,7 +36,7 @@ parse_value(const std::basic_string<charT, traits, alloc>& str)
     else if(is<table_type>(str))
         return parse_value_impl<table_type, charT, traits, alloc>::apply(str);
     else
-        throw syntax_error<std::basic_string<charT, traits, alloc> >("unknown type " + str);
+        throw syntax_error<charT>("unknown type " + str);
 }
 
 /*! @brief return iterator points to brace or bracket that enclose the block. *
@@ -103,7 +103,7 @@ find_multi_string_end(
         const charT quat)
 {
     typedef std::basic_string<charT, traits, alloc> string_type;
-    typedef syntax_error<string_type> syntax_exception;
+    typedef syntax_error<charT> syntax_exception;
     if(std::distance(begin, end) < 3)
         throw syntax_exception("not multi string " + string_type(begin, end));
     while(begin+2 != end)
@@ -129,7 +129,7 @@ find_value_end(
        const typename std::basic_string<charT, traits, alloc>::const_iterator end)
 {
     typedef std::basic_string<charT, traits, alloc> string_type;
-    typedef syntax_error<string_type> syntax_exception;
+    typedef syntax_error<charT> syntax_exception;
 
     typename string_type::const_iterator close;
     if(*begin == '[')
@@ -168,7 +168,7 @@ template<typename charT, typename traits, typename alloc>
 std::vector<std::basic_string<charT, traits, alloc>>
 split_array(const std::basic_string<charT, traits, alloc>& str)
 {
-    using syntax_exception = syntax_error<std::basic_string<charT, traits, alloc>>;
+    using syntax_exception = syntax_error<charT>;
     auto iter = str.cbegin();
     if(*iter != '[') throw syntax_exception("not array: " + str);
     ++iter;
@@ -208,7 +208,7 @@ split_table(const std::basic_string<charT, traits, alloc>& str)
 {
 // {foo = "some, string = sample", bar = [1, 2, 3], baz = {def = recursive}}
 // ["foo = "some, string = sample"", "bar = [1, 2, 3]", "baz = {}"]
-    typedef syntax_error<std::basic_string<charT, traits, alloc> > syntax_exception;
+    typedef syntax_error<charT> syntax_exception;
     typename std::basic_string<charT, traits, alloc>::const_iterator iter = str.begin();
     if(*iter != '{') throw syntax_exception(str);
     ++iter;
@@ -272,7 +272,7 @@ struct parse_value_impl<Boolean, charT, traits, alloc>
             std::make_shared<typed_value<Boolean>>();
              if(str == "true")  val->value = true;
         else if(str == "false") val->value = false;
-        else throw internal_error<std::basic_string<charT, traits, alloc>>("not boolean type" + str);
+        else throw internal_error<charT>("not boolean type" + str);
         return val;
     }
 };
@@ -287,7 +287,7 @@ struct parse_value_impl<Integer, charT, traits, alloc>
             std::make_shared<typed_value<Integer>>();
         try{val->value = std::stoll(remove(str, '_'));}
         catch(std::exception& excpt)
-        {throw internal_error<std::basic_string<charT, traits, alloc>>("not Integer type" + str);}
+        {throw internal_error<charT>("not Integer type" + str);}
         return val;
     }
 };
@@ -302,7 +302,7 @@ struct parse_value_impl<Float, charT, traits, alloc>
             std::make_shared<typed_value<Float>>();
         try{val->value = std::stod(remove(str, '_'));}
         catch(std::exception& excpt)
-        {throw internal_error<std::basic_string<charT, traits, alloc>>("not Float type" + str);}
+        {throw internal_error<charT>("not Float type" + str);}
         return val;
     }
 };
@@ -321,7 +321,7 @@ struct parse_value_impl<String, charT, traits, alloc>
             inside_of_quotation = str.substr(3, str.size() - 6);
         else if(str.front() == '\'' || str.front() == '\"')
             inside_of_quotation = str.substr(1, str.size() - 2);
-        else throw internal_error<std::basic_string<charT, traits, alloc>>("not String type" + str);
+        else throw internal_error<charT>("not String type" + str);
 
         if(str.front() == '\"')
             inside_of_quotation = unescape(inside_of_quotation);
@@ -338,7 +338,7 @@ struct parse_value_impl<Datetime, charT, traits, alloc>
     static std::shared_ptr<value_base>
     apply(const std::basic_string<charT, traits, alloc>& str)
     {
-        typedef internal_error<std::basic_string<charT, traits, alloc>> internal_exception;
+        typedef internal_error<charT> internal_exception;
         try{
         //           1         2
         // 012345678901234567890123
@@ -408,13 +408,13 @@ struct parse_value_impl<Datetime, charT, traits, alloc>
         }
         else 
         {
-            throw internal_error<std::basic_string<charT, traits, alloc>>("not datetime");
+            throw internal_error<char>("not datetime");
         }
 
         }//try
         catch(std::exception& excpt)
         {
-            throw internal_error<std::basic_string<charT, traits, alloc>>("cannot parse as Datetime " + str);
+            throw internal_error<charT>("cannot parse as Datetime " + str);
         }
     }
 
@@ -435,13 +435,13 @@ struct parse_value_impl<Datetime, charT, traits, alloc>
         if(iss.get() == '+')
         {
             val->value += std::chrono::hours(std::stoi(get_word(iss, 2)));
-            if(iss.get() != ':') throw internal_error<std::basic_string<charT, traits, alloc>>(":");
+            if(iss.get() != ':') throw internal_error<charT>(":");
             val->value += std::chrono::minutes(std::stoi(get_word(iss, 2)));
         }
         else
         {
             val->value -= std::chrono::hours(std::stoi(get_word(iss, 2)));
-            if(iss.get() != ':') throw internal_error<std::basic_string<charT, traits, alloc>>(":");
+            if(iss.get() != ':') throw internal_error<charT>(":");
             val->value -= std::chrono::minutes(std::stoi(get_word(iss, 2)));
         }
         return;

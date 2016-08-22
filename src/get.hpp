@@ -24,7 +24,7 @@ struct get_impl
     {
         auto tmp = std::dynamic_pointer_cast<typed_value<T>>(val);
         if(!tmp)
-            throw type_error<std::string>("not "+std::string(print_type<T>()));
+            throw type_error<char>("not "+std::string(print_type<T>()));
         return tmp->value;
     }
 };
@@ -35,7 +35,7 @@ struct get_impl<Table>
     static Table apply(const std::shared_ptr<value_base>& val)
     {
         auto tmp = std::dynamic_pointer_cast<table_type>(val);
-        if(!tmp) throw type_error<std::string>("not table");
+        if(!tmp) throw type_error<char>("not table");
         return tmp->value;
     }
 };
@@ -46,7 +46,7 @@ struct get_impl<Array<T>>
     static Array<T> apply(const std::shared_ptr<value_base>& val)
     {
         auto tmp = std::dynamic_pointer_cast<array_type>(val);
-        if(!tmp) throw type_error<std::string>("not array");
+        if(!tmp) throw type_error<char>("not array");
         Array<T> retval; retval.reserve(tmp->value.size());
         for(auto iter = tmp->value.cbegin(); iter != tmp->value.cend(); ++iter)
             retval.push_back(get<T>(*iter));
