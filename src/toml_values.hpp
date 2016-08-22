@@ -13,7 +13,6 @@ struct typed_value : public value_base
 {
     T value;
     typed_value() = default;
-    typed_value(const T& t): value(t){}
     ~typed_value() noexcept override = default;
 };
 
