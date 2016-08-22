@@ -37,7 +37,6 @@ struct is_impl<Integer, charT, traits, alloc>
             if(('0' <= *iter && *iter <= '9'))
                 underscore = false;
             else if(*iter == '_')
-                // each underscore must be surrounded by at least one digit.
                 if(underscore) return false;
                 else underscore = true;
             else
@@ -67,29 +66,17 @@ struct is_impl<Float, charT, traits, alloc>
         for(; iter != str.end(); ++iter)
         {
             if(('0' <= *iter && *iter <= '9'))
-            {
                 underscore = false;
-            }
             else if(*iter == '_')
-            {// each underscore must be surrounded by at least one digit.
                 if(underscore) return false;
-                underscore = true;
-            }
+                else underscore = true;
             else if(*iter == 'e' || *iter == 'E')
-            {
                 if(underscore) return false;
-                flag_eE = true; // this appear only once.
-            }
+                else flag_eE = true;
             else if(*iter == '+' || *iter == '-')
-            {
-                if(underscore) return false;
-                if(!flag_eE)   return false;// this is not begin.
-            }
+                if(underscore || !flag_eE) return false;
             else if(*iter == '.')
-            {
-                if(underscore) return false;
-                if(flag_eE)    return false;
-            }
+                if(underscore || flag_eE) return false;
             else return false;
         }
         return true;
@@ -101,17 +88,14 @@ struct is_impl<String, charT, traits, alloc>
 {
     static bool apply(const std::basic_string<charT, traits, alloc>& str)
     {
-        if(str.front() == '\"' || str.front() == '\'')
-        {
-            if(str.front() == '\"' && str.back() == '\"') return true;
-            if(str.front() == '\'' && str.back() == '\'') return true;
+        if(str.front() != '\"' && str.front() != '\'') return false;
 
-            if(str.substr(0, 3) == "\"\"\"" &&
-               str.substr(str.size() - 3, 3) == "\"\"\"") return true;
-            if(str.substr(0, 3) == "\'\'\'" &&
-               str.substr(str.size() - 3, 3) == "\'\'\'") return true;
-        }
-        return false;
+        if(str.substr(0, 3) == "\"\"\"" &&
+           str.substr(str.size() - 3, 3) == "\"\"\"") return true;
+        if(str.substr(0, 3) == "\'\'\'" &&
+           str.substr(str.size() - 3, 3) == "\'\'\'") return true;
+        if(str.front() == '\"' && str.back() == '\"') return true;
+        if(str.front() == '\'' && str.back() == '\'') return true;
     }
 };
 
