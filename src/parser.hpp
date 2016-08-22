@@ -98,7 +98,7 @@ determine_line_kind(const std::basic_string<charT, traits, alloc>& line)
     else if(std::count(line.begin(), line.end(), '=') >= 1)
     {
         if(line.front() == '=')
-            throw syntax_error<charT, traits, alloc>("line starts with = " + line);
+            throw syntax_error<std::basic_string<charT, traits, alloc> >(line);
         return LineKind::KEY_VALUE;
     }
     else
@@ -117,7 +117,8 @@ extract_table_title(const std::basic_string<charT, traits, alloc>& line)
         return line.substr(1, line.size()-2);
     }
     else
-        throw internal_error<charT, traits, alloc>("not table title line" + line);
+        throw internal_error<std::basic_string<charT, traits, alloc>>(
+                "not table title line" + line);
 }
 
 template<typename charT, typename traits, typename alloc>
@@ -194,17 +195,14 @@ parse_table(std::basic_istream<charT, traits>& is)
                 }
                 catch(end_of_file& eof)
                 {
-                    throw syntax_error<charT, traits,
-                                       std::allocator<charT>>("sudden eof");
+                    throw syntax_error<std::string>("sudden eof");
                 }
                 break;
             }
             case LineKind::UNKNOWN:
-                throw syntax_error<charT, traits,
-                               std::allocator<charT>>("unknown line: " + line);
+                throw syntax_error<std::basic_string<charT, traits>>("unknown line: " + line);
             default:
-                throw internal_error<charT, traits,
-                               std::allocator<charT>>("invalid line kind");
+                throw internal_error<std::string>("invalid line kind");
         }
     }
     return retval;
@@ -234,8 +232,8 @@ Data parse(std::basic_istream<charT, traits>& is)
                     data[table_title] = std::make_shared<array_type>();
                 const std::shared_ptr<array_type> array_ptr = 
                     std::dynamic_pointer_cast<array_type>(data[table_title]);
-                if(!array_ptr) throw internal_error<charT, traits,
-                    std::allocator<charT>>("dynamic_pointer_cast error");
+                if(!array_ptr) 
+                    throw internal_error<std::string>("dyn_ptr_cast error");
                 array_ptr->value.push_back(parse_table(is));
                 break;
             }
@@ -248,17 +246,15 @@ Data parse(std::basic_istream<charT, traits>& is)
                 }
                 catch(end_of_file& eof)
                 {
-                    throw syntax_error<charT, traits,
-                               std::allocator<charT>>("sudden eof");
+                    throw syntax_error<std::string>("sudden eof");
                 }
                 break;
             }
             case LineKind::UNKNOWN:
-                throw syntax_error<charT, traits,
-                               std::allocator<charT>>("unknown line: " + line);
+                throw syntax_error<std::basic_string<charT, traits>>(
+                        "unknown line: " + line);
             default:
-                throw internal_error<charT, traits,
-                               std::allocator<charT>>("invalid line kind");
+                throw internal_error<std::string>("invalid line kind");
         }
     }
     return data;
