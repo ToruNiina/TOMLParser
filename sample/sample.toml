@@ -8,6 +8,7 @@ basic_string      = "basic \"string\""
 multi_line_string = """
     multi line
     string
+    \u00CB\u015C\u010C
     """
 array          = [1, 2, 3]
 array_of_array = [[1, 2], # this is comment.
