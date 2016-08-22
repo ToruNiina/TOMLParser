@@ -8,7 +8,6 @@ now, this library support only c++11 or later.
 development is now ongoing. some features of TOML listed below is not supported.
 - quated keys
 - nested table with Dots
-- escape sequence in basic string
 - include extraneous whitespace before '\' in multi-line basic string
 
 ## Usage
@@ -19,16 +18,16 @@ You can easily see how to use this library if you read the following code.
     #include <fstream>
 
     std::ifstream file("sample.toml");
-    toml::Data                      data  = toml::parse(file);
-    std::string                     title = toml::get<toml::String>(data.at("title"));
-    toml::Table                     table = toml::get<toml::Table>(data.at("table"));
-    std::vector<toml::Table>        array = toml::get<toml::Array<toml::Table>>(data.at("array_of_table"));
+    toml::Data                     data  = toml::parse(file);
+    std::string                    title = toml::get<toml::String>(data.at("title"));
+    toml::Table                    table = toml::get<toml::Table>(data.at("table"));
+    std::vector<toml::Table>       array = toml::get<toml::Array<toml::Table>>(data.at("array_of_table"));
     
-    std::int_least64_t              foo   = toml::get<toml::Integer>(table.at("foo"));
-    std::vector<double>             bar   = toml::get<toml::Array<Float>>(table.at("bar"));
-    std::vector<std::vector<bool>>  baz   = toml::get<toml::Array<toml::Array<Boolean>>>(table.at("baz"));
-    toml::Table                     qux   = toml::get<toml::Table>(table.at("qux"));
-    std::string                     quux  = toml::get<toml::String>(qux.at("quux")); 
+    std::int_least64_t             foo   = toml::get<toml::Integer>(table.at("foo"));
+    std::vector<double>            bar   = toml::get<toml::Array<Float>>(table.at("bar"));
+    std::vector<std::vector<bool>> baz   = toml::get<toml::Array<toml::Array<Boolean>>>(table.at("baz"));
+    toml::Table                    qux   = toml::get<toml::Table>(table.at("qux"));
+    std::string                    quux  = toml::get<toml::String>(qux.at("quux")); 
 
 you can parse the following toml file with this code.
 
