@@ -22,20 +22,20 @@ utf8_to_char(const std::basic_string<charT, traits, alloc>& str)
     else if(codepoint < 0x800)
     {
         charactor += (static_cast<unsigned char>(0xC0 | codepoint >> 6));
-        charactor += (static_cast<unsigned char>(0x80 | codepoint & 0x3F));
+        charactor += (static_cast<unsigned char>(0x80 | (codepoint & 0x3F)));
     }
     else if(codepoint < 0x10000)
     {
         charactor += (static_cast<unsigned char>(0xE0 | codepoint >> 12));
-        charactor += (static_cast<unsigned char>(0x80 | codepoint >> 6 & 0x3F));
-        charactor += (static_cast<unsigned char>(0x80 | codepoint & 0x3F));
+        charactor += (static_cast<unsigned char>(0x80 |(codepoint >> 6 & 0x3F)));
+        charactor += (static_cast<unsigned char>(0x80 |(codepoint & 0x3F)));
     }
     else
     {
         charactor += (static_cast<unsigned char>(0xF0 | codepoint >> 18));
-        charactor += (static_cast<unsigned char>(0x80 | codepoint >> 12& 0x3F));
-        charactor += (static_cast<unsigned char>(0x80 | codepoint >> 6 & 0x3F));
-        charactor += (static_cast<unsigned char>(0x80 | codepoint & 0x3F));
+        charactor += (static_cast<unsigned char>(0x80 |(codepoint >> 12& 0x3F)));
+        charactor += (static_cast<unsigned char>(0x80 |(codepoint >> 6 & 0x3F)));
+        charactor += (static_cast<unsigned char>(0x80 |(codepoint & 0x3F)));
     }
     return charactor;
 }
