@@ -109,6 +109,7 @@ struct is_impl<String, charT, traits, alloc>
            str.substr(str.size() - 3, 3) == "\'\'\'") return true;
         if(str.front() == '\"' && str.back() == '\"') return true;
         if(str.front() == '\'' && str.back() == '\'') return true;
+        return false;
     }
 };
 
