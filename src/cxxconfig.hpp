@@ -26,6 +26,7 @@
     {
         using std::shared_ptr;
         using std::make_shared;
+        using std::dynamic_pointer_cast;
         using std::chrono;
         using std::int_least64_t;
     }
@@ -37,6 +38,7 @@
     {
         using boost::shared_ptr;
         using boost::make_shared;
+        using boost::dynamic_pointer_cast;
         using boost::chrono;
     }
 #ifdef TOML_HAVE_STDINT_H
