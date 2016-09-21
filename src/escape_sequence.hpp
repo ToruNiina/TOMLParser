@@ -1,7 +1,8 @@
 #ifndef TOML_UTF_CODEPOINT
 #define TOML_UTF_CODEPOINT
 #include <string>
-#include <cstdint>
+#include <iostream>
+#include <sstream>
 
 namespace toml
 {
@@ -10,7 +11,7 @@ template<typename charT>
 std::basic_string<charT>
 utf8_to_char(const std::basic_string<charT>& str)
 {
-    std::uint_least32_t codepoint;
+    unsigned int codepoint;
     std::basic_istringstream<charT> iss(str);
     iss >> std::hex >> codepoint;
 
@@ -21,28 +22,28 @@ utf8_to_char(const std::basic_string<charT>& str)
     }
     else if(codepoint < 0x800)
     {
-        charactor += (static_cast<unsigned char>(0xC0 | codepoint >> 6));
-        charactor += (static_cast<unsigned char>(0x80 | (codepoint & 0x3F)));
+        charactor += static_cast<unsigned char>(0xC0 | codepoint >> 6);
+        charactor += static_cast<unsigned char>(0x80 | (codepoint & 0x3F));
     }
     else if(codepoint < 0x10000)
     {
-        charactor += (static_cast<unsigned char>(0xE0 | codepoint >> 12));
-        charactor += (static_cast<unsigned char>(0x80 |(codepoint >> 6 & 0x3F)));
-        charactor += (static_cast<unsigned char>(0x80 |(codepoint & 0x3F)));
+        charactor += static_cast<unsigned char>(0xE0 | codepoint >> 12);
+        charactor += static_cast<unsigned char>(0x80 |(codepoint >> 6 & 0x3F));
+        charactor += static_cast<unsigned char>(0x80 |(codepoint & 0x3F));
     }
     else
     {
-        charactor += (static_cast<unsigned char>(0xF0 | codepoint >> 18));
-        charactor += (static_cast<unsigned char>(0x80 |(codepoint >> 12& 0x3F)));
-        charactor += (static_cast<unsigned char>(0x80 |(codepoint >> 6 & 0x3F)));
-        charactor += (static_cast<unsigned char>(0x80 |(codepoint & 0x3F)));
+        charactor += static_cast<unsigned char>(0xF0 | codepoint >> 18);
+        charactor += static_cast<unsigned char>(0x80 |(codepoint >> 12 & 0x3F));
+        charactor += static_cast<unsigned char>(0x80 |(codepoint >> 6  & 0x3F));
+        charactor += static_cast<unsigned char>(0x80 |(codepoint & 0x3F));
     }
     return charactor;
 }
 
-/* @brief unescape basic_string.          *
- * @param str inside of quatation marks   *
- * @return unescaped string.              */
+/* @brief unescape toml::String. *
+ * @param String inside of ""    *
+ * @return unescaped string.     */
 template<typename charT>
 std::basic_string<charT>
 unescape(const std::basic_string<charT>& str)
@@ -77,7 +78,7 @@ unescape(const std::basic_string<charT>& str)
             }
             else if(*iter == 'U')
             {
-                std::string utf8code;
+                std::string utf8code("");
                 for(std::size_t i=0; i<8; ++i)
                 {
                     ++iter;
