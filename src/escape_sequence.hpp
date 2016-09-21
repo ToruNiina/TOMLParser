@@ -6,15 +6,15 @@
 namespace toml
 {
 
-template<typename charT, typename traits, typename alloc>
-std::basic_string<charT, traits, alloc>
-utf8_to_char(const std::basic_string<charT, traits, alloc>& str)
+template<typename charT>
+std::basic_string<charT>
+utf8_to_char(const std::basic_string<charT>& str)
 {
     std::uint_least32_t codepoint;
-    std::basic_istringstream<charT, traits, alloc> iss(str);
+    std::basic_istringstream<charT> iss(str);
     iss >> std::hex >> codepoint;
 
-    std::basic_string<charT, traits, alloc> charactor;
+    std::basic_string<charT> charactor;
     if(codepoint < 0x80)
     {
         charactor += static_cast<unsigned char>(codepoint);
@@ -43,12 +43,12 @@ utf8_to_char(const std::basic_string<charT, traits, alloc>& str)
 /* @brief unescape basic_string.          *
  * @param str inside of quatation marks   *
  * @return unescaped string.              */
-template<typename charT, typename traits, typename alloc>
-std::basic_string<charT, traits, alloc>
-unescape(const std::basic_string<charT, traits, alloc>& str)
+template<typename charT>
+std::basic_string<charT>
+unescape(const std::basic_string<charT>& str)
 {
-    std::basic_string<charT, traits, alloc> retval;
-    for(typename std::basic_string<charT, traits, alloc>::const_iterator
+    std::basic_string<charT> retval;
+    for(typename std::basic_string<charT>::const_iterator
             iter = str.begin(); iter != str.end(); ++iter)
     {
         if(*iter != '\\')
