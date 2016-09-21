@@ -6,49 +6,56 @@
 namespace toml
 {
 
-template<typename T, typename charT, typename traits, typename alloc>
+template<typename T, typename charT>
 struct is_impl;
 
-template<typename T, typename charT, typename traits, typename alloc>
-bool is(const std::basic_string<charT, traits, alloc>& str)
+template<typename T, typename charT>
+bool is(const std::basic_string<charT>& str)
 {
-    return is_impl<T, charT, traits, alloc>::apply(str);
+    return is_impl<T, charT>::invoke(str);
 }
 
-template<typename charT, typename traits, typename alloc>
-struct is_impl<Boolean, charT, traits, alloc>
+template<typename charT>
+struct is_impl<Boolean, charT>
 {
-    static bool apply(const std::basic_string<charT, traits, alloc>& str)
+    static bool invoke(const std::basic_string<charT>& str)
     {
         return ((str == "true") || (str == "false"));
     }
 };
 
-template<typename charT, typename traits, typename alloc>
-struct is_impl<Integer, charT, traits, alloc>
+template<typename charT>
+struct is_impl<Integer, charT>
 {
-    static bool apply(const std::basic_string<charT, traits, alloc>& str)
+    static bool invoke(const std::basic_string<charT>& str)
     {
-        typename std::basic_string<charT, traits, alloc>::const_iterator
-            iter = str.begin();
+        typename std::basic_string<charT>::const_iterator iter = str.begin();
         if(*iter == '+' || *iter == '-') ++iter;
         bool underscore = false;
         for(; iter != str.end(); ++iter)
+        {
             if(('0' <= *iter && *iter <= '9'))
+            {
                 underscore = false;
+            }
             else if(*iter == '_')
+            {
                 if(underscore) return false;
                 else underscore = true;
+            }
             else
+            {
                 return false;
+            }
+        }
         return true;
     }
 };
 
-template<typename charT, typename traits, typename alloc>
-struct is_impl<Float, charT, traits, alloc>
+template<typename charT>
+struct is_impl<Float, charT>
 {
-    static bool apply(const std::basic_string<charT, traits, alloc>& str)
+    static bool invoke(const std::basic_string<charT>& str)
     {
         const std::size_t num_eE = std::count(str.begin(), str.end(), 'e') + 
                                    std::count(str.begin(), str.end(), 'E');
@@ -57,8 +64,7 @@ struct is_impl<Float, charT, traits, alloc>
         const std::size_t num_dot = std::count(str.begin(), str.end(), '.');
         if(1 < num_dot) return false;
 
-        typename std::basic_string<charT, traits, alloc>::const_iterator
-            iter = str.begin();
+        typename std::basic_string<charT>::const_iterator iter = str.begin();
         if(*iter == '+' || *iter == '-') ++iter;
 
         bool flag_eE = false;
@@ -96,10 +102,10 @@ struct is_impl<Float, charT, traits, alloc>
     }
 };
 
-template<typename charT, typename traits, typename alloc>
-struct is_impl<String, charT, traits, alloc>
+template<typename charT>
+struct is_impl<String, charT>
 {
-    static bool apply(const std::basic_string<charT, traits, alloc>& str)
+    static bool invoke(const std::basic_string<charT>& str)
     {
         if(str.front() != '\"' && str.front() != '\'') return false;
 
@@ -113,10 +119,10 @@ struct is_impl<String, charT, traits, alloc>
     }
 };
 
-template<typename charT, typename traits, typename alloc>
-struct is_impl<Datetime, charT, traits, alloc>
+template<typename charT>
+struct is_impl<Datetime, charT>
 {
-    static bool apply(const std::basic_string<charT, traits, alloc>& str)
+    static bool invoke(const std::basic_string<charT>& str)
     {
         //           1         2
         // 012345678901234567890123
@@ -127,9 +133,10 @@ struct is_impl<Datetime, charT, traits, alloc>
         // yyyy-mm-ddThh:mm:ss.sss
         // yyyy-mm-ddThh:mm:ss.sssZ
         // yyyy-mm-ddThh:mm:ss.sss+09:00
+        typedef std::char_traits<charT> traits;
 
         if(str.size() < 10) return false;
-        std::basic_istringstream<charT, traits, alloc> iss(str);
+        std::basic_istringstream<charT> iss(str);
         if(!read_number_digit(iss, 4))  return false;
         if(iss.get() != '-')            return false;
         if(!read_number_digit(iss, 2))  return false;
@@ -146,7 +153,10 @@ struct is_impl<Datetime, charT, traits, alloc>
         if(iss.peek() == traits::eof()) return true;
 
         const charT c = iss.get();
-             if(c == 'Z' || c == 'z') return (iss.peek() == traits::eof());
+        if(c == 'Z' || c == 'z')
+        {
+            return (iss.peek() == traits::eof());
+        }
         else if(c == '+' || c == '-')
         {
             if(!read_number_digit(iss, 2)) return false;
@@ -193,20 +203,20 @@ struct is_impl<Datetime, charT, traits, alloc>
     }
 };
 
-template<typename charT, typename traits, typename alloc>
-struct is_impl<array_type, charT, traits, alloc>
+template<typename charT>
+struct is_impl<array_type, charT>
 {
-    static bool apply(const std::basic_string<charT, traits, alloc>& str)
+    static bool invoke(const std::basic_string<charT>& str)
     {
         if(str.front() != '[' || str.back() != ']') return false;
         return is_closed(str, '[', ']');
     }
 };
 
-template<typename charT, typename traits, typename alloc>
-struct is_impl<table_type, charT, traits, alloc>
+template<typename charT>
+struct is_impl<table_type, charT>
 {
-    static bool apply(const std::basic_string<charT, traits, alloc>& str)
+    static bool invoke(const std::basic_string<charT>& str)
     {
         if(str.front() != '{' || str.back() != '}') return false;
         return is_closed(str, '{', '}');
