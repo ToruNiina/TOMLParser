@@ -11,20 +11,19 @@ namespace toml
 template<typename T> struct get_impl;
 
 template<typename T>
-inline T get(const std::shared_ptr<value_base>& val)
+T get(const toml::shared_ptr<value_base>& val)
 {
-    static_assert(is_toml_type<T>::value, "use get<T> for toml value");
-    return get_impl<T>::apply(val);
+    return get_impl<T>::invoke(val);
 }
 
 template<typename T>
 struct get_impl
 {
-    static T apply(const std::shared_ptr<value_base>& val)
+    static T invoke(const toml::shared_ptr<value_base>& val)
     {
-        auto tmp = std::dynamic_pointer_cast<typed_value<T>>(val);
-        if(!tmp)
-            throw type_error<char>("not "+std::string(print_type<T>()));
+        toml::shared_ptr<typed_value<T> > tmp =
+            toml::dynamic_pointer_cast<typed_value<T>>(val);
+        if(!tmp) throw type_error("not " + std::string(as_string<T>()));
         return tmp->value;
     }
 };
@@ -32,24 +31,31 @@ struct get_impl
 template<>
 struct get_impl<Table>
 {
-    static Table apply(const std::shared_ptr<value_base>& val)
+    static Table invoke(const toml::shared_ptr<value_base>& val)
     {
-        auto tmp = std::dynamic_pointer_cast<table_type>(val);
-        if(!tmp) throw type_error<char>("not table");
+        toml::shared_ptr<table_type> tmp =
+            toml::dynamic_pointer_cast<table_type>(val);
+        if(!tmp) throw type_error("not table type");
         return tmp->value;
     }
 };
 
 template<typename T>
-struct get_impl<Array<T>>
+struct get_impl<Array<T> >
 {
-    static Array<T> apply(const std::shared_ptr<value_base>& val)
+    static Array<T> invoke(const toml::shared_ptr<value_base>& val)
     {
-        auto tmp = std::dynamic_pointer_cast<array_type>(val);
+        toml::shared_ptr<array_type> tmp =
+            toml::dynamic_pointer_cast<array_type>(val);
         if(!tmp) throw type_error<char>("not array");
-        Array<T> retval; retval.reserve(tmp->value.size());
-        for(auto iter = tmp->value.cbegin(); iter != tmp->value.cend(); ++iter)
+
+        Array<T> retval;
+        retval.reserve(tmp->value.size());
+
+        for(typename std::vector<toml::shared_ptr<value_base> >::const_iterator
+                iter = tmp->value.begin(); iter != tmp->value.end(); ++iter)
             retval.push_back(get<T>(*iter));
+
         return retval;
     }
 };
