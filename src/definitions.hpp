@@ -1,5 +1,6 @@
 #ifndef TOML_DEFINITIONS
 #define TOML_DEFINITIONS
+#include "cxxconfig.hpp"
 #include <string>
 #include <vector>
 #include <map>
@@ -10,18 +11,22 @@
 namespace toml
 {
 
-// empty class. all other toml value classes are subclass of this.
-struct value_base{virtual ~value_base() noexcept = default;};
+struct value_base{virtual ~value_base() TOML_NOEXCEPT {}};
 
-using String   = std::string;
-using Integer  = std::int_least64_t;
-using Float    = double;
-using Boolean  = bool;
-using Datetime = std::chrono::system_clock::time_point;
-template<typename T>
-using Array = std::vector<T>;
-using Table = std::map<std::string, std::shared_ptr<value_base>>;
-using Data  = Table;
+typedef std::string                      String;
+typedef int_least64_t                    Integer;
+typedef double                           Float;
+typedef bool                             Boolean;
+typedef chrono::system_clock::time_point Datetime;
+typedef std::map<std::string, shared_ptr<value_base> > Table;
+typedef Table Data;
+
+#ifdef TOML_ENABLE_CXX11
+    template<typename T> using Array = std::vector<T>;
+#else
+    // or simply use std::vector as template argument of toml::get<T>.
+    template<typename T> struct Array{typedef std::vector<T> type;};
+#endif
 
 }
 
