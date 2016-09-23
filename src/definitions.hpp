@@ -17,14 +17,13 @@ typedef std::string                      String;
 typedef int_least64_t                    Integer;
 typedef double                           Float;
 typedef bool                             Boolean;
-typedef chrono::system_clock::time_point Datetime;
+typedef toml::system_clock::time_point   Datetime;
 typedef std::map<std::string, shared_ptr<value_base> > Table;
 typedef Table Data;
 
 #ifdef TOML_ENABLE_CXX11
     template<typename T> using Array = std::vector<T>;
 #else
-    // or simply use std::vector as template argument of toml::get<T>.
     template<typename T> struct Array{typedef std::vector<T> type;};
 #endif
 
