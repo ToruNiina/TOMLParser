@@ -23,9 +23,10 @@ struct array_type : public value_base
     ~array_type() TOML_NOEXCEPT TOML_OVERRIDE {}
 };
 
+template<typename charT = char>
 struct table_type : public value_base
 {
-    std::map<std::string, toml::shared_ptr<value_base> > value;
+    std::map<std::basic_string<charT>, toml::shared_ptr<value_base> > value;
     ~table_type() TOML_NOEXCEPT TOML_OVERRIDE {}
 };
 
