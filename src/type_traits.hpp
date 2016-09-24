@@ -27,7 +27,7 @@ struct is_toml_type<Table>     : public std::true_type{};
 #ifndef TOML_ENABLE_CXX11
 // in c++98 case, use std::vector as Array for simplicity.
 template<typename T>
-struct is_toml_type<std::vector<T>> : public std::true_type{};
+struct is_toml_type<std::vector<T> > : public std::true_type{};
 #endif
 
 template<typename T>

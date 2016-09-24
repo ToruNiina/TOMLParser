@@ -22,7 +22,7 @@ struct get_impl
     static T invoke(const toml::shared_ptr<value_base>& val)
     {
         toml::shared_ptr<typed_value<T> > tmp =
-            toml::dynamic_pointer_cast<typed_value<T>>(val);
+            toml::dynamic_pointer_cast<typed_value<T> >(val);
         if(!tmp) throw type_error("not " + std::string(as_string<T>()));
         return tmp->value;
     }
@@ -47,7 +47,7 @@ struct get_impl<Array<T> >
     {
         toml::shared_ptr<array_type> tmp =
             toml::dynamic_pointer_cast<array_type>(val);
-        if(!tmp) throw type_error<char>("not array");
+        if(!tmp) throw type_error("not array type");
 
         Array<T> retval;
         retval.reserve(tmp->value.size());
