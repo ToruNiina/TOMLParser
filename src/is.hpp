@@ -1,7 +1,6 @@
 #ifndef TOML_IS
 #define TOML_IS
 #include "toml_values.hpp"
-#include "line_operation.hpp"
 
 namespace toml
 {
@@ -107,15 +106,43 @@ struct is_impl<String, charT>
 {
     static bool invoke(const std::basic_string<charT>& str)
     {
-        if(str.front() != '\"' && str.front() != '\'') return false;
+        if(str.substr(0, 3) == "\"\"\"")
+            return str.substr(str.size() - 3, 3) == "\"\"\"";
+        if(str.substr(0, 3) == "\'\'\'")
+            return str.substr(str.size() - 3, 3) == "\'\'\'";
 
-        if(str.substr(0, 3) == "\"\"\"" &&
-           str.substr(str.size() - 3, 3) == "\"\"\"") return true;
-        if(str.substr(0, 3) == "\'\'\'" &&
-           str.substr(str.size() - 3, 3) == "\'\'\'") return true;
-        if(str.front() == '\"' && str.back() == '\"') return true;
-        if(str.front() == '\'' && str.back() == '\'') return true;
-        return false;
+        typename std::basic_string<charT>::const_iterator iter = str.begin();
+        if(*iter == '\'') // literal string
+        {
+            while(++iter != str.end())
+            {
+                if(*iter == '\'') return false;
+            }
+            return true;
+        }
+        else if(*iter == '\"') // basic string
+        {
+            bool esc = false;
+            while(++iter != str.end())
+            {
+                if(*iter == '\\')
+                {
+                    esc = true;
+                }
+                else if(*iter == '\"')
+                {
+                    if(!esc) return false;
+                    esc = false;
+                }
+                else
+                {
+                    esc = false;
+                }
+            }
+            return true;
+        
+        }
+        else return false;
     }
 };
 
@@ -189,8 +216,7 @@ struct is_impl<Datetime, charT>
         else return false;
     }
 
-    static bool read_number_digit(
-            std::basic_istringstream<charT, traits, alloc>& iss, 
+    static bool read_number_digit(std::basic_istringstream<charT>& iss, 
             const std::size_t l)
     {
         for(std::size_t i=0; i<l; ++i)
