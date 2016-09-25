@@ -41,16 +41,48 @@ struct get_impl<Table>
     }
 };
 
+#ifdef TOML_ENABLE_CXX11
 template<typename T>
-struct get_impl<Array<T> >
+struct get_impl<Array<T>>
 {
     static Array<T> invoke(const toml::shared_ptr<value_base>& val)
+    {
+        auto tmp = toml::dynamic_pointer_cast<array_type>(val);
+        if(!tmp) throw type_error("not array type");
+
+        Array<T> retval;
+        retval.reserve(tmp->value.size());
+
+        for(auto iter = tmp->value.cbegin(); iter != tmp->value.cend(); ++iter)
+            retval.push_back(get<T>(*iter));
+
+        return retval;
+    }
+};
+
+template<>
+struct get_impl<Array<shared_ptr<value_base>>>
+{
+    static Array<shared_ptr<value_base>>
+    invoke(const toml::shared_ptr<value_base>& val)
+    {
+        auto tmp = toml::dynamic_pointer_cast<array_type>(val);
+        if(!tmp) throw type_error("not array type");
+        return tmp->value;
+    }
+};
+
+#else // c++98
+template<typename T>
+struct get_impl<std::vector<T> >
+{
+    static std::vector<T> invoke(const toml::shared_ptr<value_base>& val)
     {
         toml::shared_ptr<array_type> tmp =
             toml::dynamic_pointer_cast<array_type>(val);
         if(!tmp) throw type_error("not array type");
 
-        Array<T> retval;
+        std::vector<T> retval;
         retval.reserve(tmp->value.size());
 
         for(typename std::vector<toml::shared_ptr<value_base> >::const_iterator
@@ -60,6 +92,20 @@ struct get_impl<Array<T> >
         return retval;
     }
 };
+
+template<>
+struct get_impl<std::vector<shared_ptr<value_base> > >
+{
+    static std::vector<shared_ptr<value_base> >
+    invoke(const toml::shared_ptr<value_base>& val)
+    {
+        toml::shared_ptr<array_type> tmp =
+            toml::dynamic_pointer_cast<array_type>(val);
+        if(!tmp) throw type_error("not array type");
+        return tmp->value;
+    }
+};
+#endif
 
 }//toml
 

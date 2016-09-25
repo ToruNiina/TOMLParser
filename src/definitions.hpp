@@ -27,6 +27,8 @@ typedef Table Data;
     template<typename T> struct Array{typedef std::vector<T> type;};
 #endif
 
+typedef shared_ptr<value_base> ValueBase;
+
 }
 
 #endif /* TOML_DEFINITIONS */
