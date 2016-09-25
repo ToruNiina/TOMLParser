@@ -362,7 +362,9 @@ parse_multi_line_basic_string_key(const std::basic_string<charT>& str)
                 iss.seekg(pos);
             }
         }
-        contents += iss.get();
+        const charT c = iss.get();
+        if(c == std::char_traits<charT>::eof()) break;
+        contents += c;
     }
     return unescape(contents);
 }// }}}
