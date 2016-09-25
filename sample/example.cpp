@@ -195,11 +195,19 @@ int main()
         std::cout << "],";
     }
     std::cout << "]" << std::endl;
-    // TODO
-//     auto array_key4 = get<Array<Integer>>(array.at("key4"));
-//     std::cout << "key4 = .at(";
-//     for(auto x : array_key4) std::cout << x << ", ";
-//     std::cout << "]" << std::endl;
+
+    auto array_key4 = get<Array<ValueBase>>(array.at("key4"));
+    std::cout << "key4 = [";
+    auto array_key4_subarray0 = get<Array<Integer>>(array_key4.at(0));
+    std::cout << "[";
+    for(auto x : array_key4_subarray0) std::cout << x << ", ";
+    std::cout << "], ";
+    auto array_key4_subarray1 = get<Array<String>>(array_key4.at(1));
+    std::cout << "[";
+    for(auto x : array_key4_subarray1) std::cout << x << ", ";
+    std::cout << "]";
+    std::cout << "]" << std::endl;
+
     auto array_key5 = get<Array<Integer>>(array.at("key5"));
     std::cout << "key5 = [";
     for(auto x : array_key5) std::cout << x << ", ";
