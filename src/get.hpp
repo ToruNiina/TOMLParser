@@ -33,8 +33,9 @@ struct get_impl<Table>
 {
     static Table invoke(const toml::shared_ptr<value_base>& val)
     {
-        toml::shared_ptr<table_type> tmp =
-            toml::dynamic_pointer_cast<table_type>(val);
+        shared_ptr<table_type<map_key_charactor_helper<Table>::char_type> >
+            tmp = toml::dynamic_pointer_cast<
+                table_type<map_key_charactor_helper<Table>::char_type> >(val);
         if(!tmp) throw type_error("not table type");
         return tmp->value;
     }

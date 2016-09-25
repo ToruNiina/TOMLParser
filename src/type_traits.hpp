@@ -47,25 +47,41 @@ template<typename T>
 struct is_toml_struct : public std::false_type{};
 template<>
 struct is_toml_struct<array_type> : public std::true_type{};
-template<>
-struct is_toml_struct<table_type> : public std::true_type{};
+template<typename charT>
+struct is_toml_struct<table_type<charT> > : public std::true_type{};
 
 template<typename T>
-inline const char* as_string();
+struct map_key_charactor_helper{};
+template<typename charT>
+struct map_key_charactor_helper<
+    std::map<std::basic_string<charT>, shared_ptr<value_base> > >
+{
+    typedef charT char_type;
+};
+
+template<typename T>
+struct as_string_impl;
+
 template<>
-inline const char* as_string<Boolean>(){return "Boolean";}
+struct as_string_impl<Boolean>{static const char* invoke(){return "Boolean";}};
 template<>
-inline const char* as_string<Integer>(){return "Integer";}
+struct as_string_impl<Integer>{static const char* invoke(){return "Integer";}};
 template<>
-inline const char* as_string<Float>(){return "Float";}
+struct as_string_impl<Float>{static const char* invoke(){return "Float";}};
 template<>
-inline const char* as_string<String>(){return "String";}
+struct as_string_impl<String>{static const char* invoke(){return "String";}};
 template<>
-inline const char* as_string<Datetime>(){return "Datetime";}
+struct as_string_impl<Datetime>{static const char* invoke(){return "Datetime";}};
 template<>
-inline const char* as_string<array_type>(){return "array_type";}
-template<>
-inline const char* as_string<table_type>(){return "table_type";}
+struct as_string_impl<array_type>{static const char* invoke(){return "array_type";}};
+template<typename charT>
+struct as_string_impl<table_type<charT> >{static const char* invoke(){return "table_type";}};
+
+template<typename T>
+inline const char* as_string()
+{
+    return as_string_impl<T>::invoke();
+}
 
 }//toml
 
