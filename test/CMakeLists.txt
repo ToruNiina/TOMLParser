@@ -1,6 +1,7 @@
 set(TEST_NAMES
     test_newline
     test_space_and_comment
+    test_utility
     )
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/)
