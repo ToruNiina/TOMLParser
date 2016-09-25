@@ -1,6 +1,8 @@
 #ifndef TOML_IS
 #define TOML_IS
 #include "toml_values.hpp"
+#include "utility.hpp"
+#include <algorithm>
 
 namespace toml
 {
@@ -114,16 +116,19 @@ struct is_impl<String, charT>
         typename std::basic_string<charT>::const_iterator iter = str.begin();
         if(*iter == '\'') // literal string
         {
-            while(++iter != str.end())
+            ++iter;
+            while(iter + 1 != str.end())
             {
                 if(*iter == '\'') return false;
+                ++iter;
             }
             return true;
         }
         else if(*iter == '\"') // basic string
         {
             bool esc = false;
-            while(++iter != str.end())
+            ++iter;
+            while(iter + 1 != str.end())
             {
                 if(*iter == '\\')
                 {
@@ -138,6 +143,7 @@ struct is_impl<String, charT>
                 {
                     esc = false;
                 }
+                ++iter;
             }
             return true;
         
@@ -240,7 +246,7 @@ struct is_impl<array_type, charT>
 };
 
 template<typename charT>
-struct is_impl<table_type, charT>
+struct is_impl<table_type<charT>, charT>
 {
     static bool invoke(const std::basic_string<charT>& str)
     {
