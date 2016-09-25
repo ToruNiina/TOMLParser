@@ -4,35 +4,15 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <ctime>
 #include "exceptions.hpp"
-#include "utility.hpp"
+#include "escape_sequence.hpp"
 #include "toml_values.hpp"
+#include "is.hpp"
+#include "utility.hpp"
 
 namespace toml
 {
-
-// TODO: these are mockup
-template<typename charT>
-shared_ptr<value_base> parse_value(const std::basic_string<charT>& str)
-{
-    shared_ptr<typed_value<toml::String> > tmp = make_shared<typed_value<toml::String> >();
-    tmp->value = str;
-    return tmp;
-}
-
-template<typename charT>
-std::basic_string<charT> parse_basic_string(const std::basic_string<charT>& str)
-{
-    return str;
-}
-
-template<typename charT>
-std::basic_string<charT> parse_literal_string(const std::basic_string<charT>& str)
-{
-    return str;
-}
-// TODO end
-
 template<typename charT>
 inline bool is_whitespace(const charT c)
 {// {{{
@@ -324,6 +304,298 @@ std::basic_string<charT> read_value(std::basic_istream<charT>& is)
 }//}}}
 
 template<typename charT>
+std::basic_string<charT>
+parse_literal_string_key(const std::basic_string<charT>& str)
+{// {{{
+    if(str.size() > 3 && str.substr(0, 3) == "\'\'\'")
+    {
+        if(str.at(4) == '\n')
+        {
+            return std::basic_string<charT>(str.begin()+4, str.end()-3);
+        }
+        else if(str.at(4) == '\r' && str.at(5) == '\n')
+        {
+            return std::basic_string<charT>(str.begin()+5, str.end()-3);
+        }
+        else
+        {
+            return std::basic_string<charT>(str.begin()+3, str.end()-3);
+        }
+    }
+    else
+    {
+        return std::basic_string<charT>(str.begin()+1, str.end() - 1);
+    }
+}// }}}
+
+template<typename charT>
+std::basic_string<charT>
+parse_multi_line_basic_string_key(const std::basic_string<charT>& str)
+{// {{{
+    std::basic_istringstream<charT> iss(
+            std::basic_string<charT>(str.begin()+3, str.end()-3));
+    if(is_newline(iss)) iss.ignore();
+
+    std::basic_string<charT> contents;
+    while(!iss.eof())
+    {
+        if(iss.peek() == '\\')
+        {
+            const typename std::basic_istringstream<charT>::pos_type
+                pos = iss.tellg();
+            iss.ignore();
+            if(is_newline(iss))
+            {
+                while(true)
+                {
+                    if(is_newline(iss)) iss.ignore();
+                    else if(is_whitespace(iss.peek())) iss.ignore();
+                    else break;
+                }
+            }
+            else
+            {
+                iss.seekg(pos);
+            }
+        }
+        contents += iss.get();
+    }
+    return unescape(contents);
+}// }}}
+
+template<typename charT>
+std::basic_string<charT>
+parse_inline_basic_string_key(const std::basic_string<charT>& str)
+{// {{{
+    const std::basic_string<charT> contents(str.begin() + 1, str.end() - 1);
+    return unescape(contents);
+}// }}}
+
+template<typename charT>
+std::basic_string<charT>
+parse_basic_string_key(const std::basic_string<charT>& str)
+{// {{{
+    if(str.size() > 3 && str.substr(0, 3) == "\"\"\"")
+        return parse_multi_line_basic_string_key(str);
+    else 
+        return parse_inline_basic_string_key(str);
+}// }}}
+
+template<typename charT>
+std::basic_string<charT>
+parse_string_key(const std::basic_string<charT>& str)
+{// {{{
+    if(str.front() == '\'')
+        return parse_literal_string_key(str);
+    else if(str.front() == '\"')
+        return parse_basic_string_key(str);
+    else throw internal_error("parse_string_key: invalid call");
+}// }}}
+
+template<typename charT>
+shared_ptr<value_base>
+parse_string_value(const std::basic_string<charT>& str)
+{// {{{
+    shared_ptr<typed_value<String> > val = make_shared<typed_value<String> >();
+    val->value = parse_string_key(str);
+    return val;
+}// }}}
+
+template<typename charT>
+shared_ptr<value_base>
+parse_boolean_value(const std::basic_string<charT>& str)
+{// {{{
+    shared_ptr<typed_value<Boolean> > val = make_shared<typed_value<Boolean> >();
+    if(str == "true") val->value = true;
+    else if(str == "false") val->value = false;
+    else throw internal_error("parse_boolean_value: invalid call");
+    return val;
+}// }}}
+
+template<typename charT>
+shared_ptr<value_base>
+parse_integer_value(const std::basic_string<charT>& str)
+{// {{{
+    shared_ptr<typed_value<Integer> > val = make_shared<typed_value<Integer> >();
+    std::basic_string<charT> contents;
+    for(typename std::basic_string<charT>::const_iterator
+        iter = str.begin(); iter != str.end(); ++iter)
+    {
+        if(*iter != '_') contents += *iter;
+    }
+
+    std::basic_istringstream<charT> iss(contents);
+    iss >> val->value;
+    return val;
+}// }}}
+
+template<typename charT>
+shared_ptr<value_base>
+parse_float_value(const std::basic_string<charT>& str)
+{// {{{
+    shared_ptr<typed_value<Float> > val = make_shared<typed_value<Float> >();
+    std::basic_string<charT> contents;
+    for(typename std::basic_string<charT>::const_iterator
+        iter = str.begin(); iter != str.end(); ++iter)
+    {
+        if(*iter != '_') contents += *iter;
+    }
+
+    std::basic_istringstream<charT> iss(contents);
+    iss >> val->value;
+    return val;
+}// }}}
+
+template<typename charT>
+void apply_offset(shared_ptr<typed_value<Datetime> >& val,
+                  std::basic_istringstream<charT>& iss)
+{
+    switch(iss.get())
+    {
+        case '+':
+        {
+            val->value += toml::chrono::hours(read_integer(iss, 2));
+            if(iss.get() != ':') throw syntax_error("no : in datetime offset");
+            val->value += toml::chrono::minutes(read_integer(iss, 2));
+            break;
+        }
+        case '-':
+        {
+            val->value -= toml::chrono::hours(read_integer(iss, 2));
+            if(iss.get() != ':') throw syntax_error("no : in datetime offset");
+            val->value -= toml::chrono::minutes(read_integer(iss, 2));
+            break;
+        }
+        default:
+            throw internal_error("apply_offset: invalid call");
+    }
+    return;
+}
+
+template<typename charT>
+shared_ptr<value_base>
+parse_datetime_value(const std::basic_string<charT>& str)
+{
+    try{
+    //           1         2
+    // 012345678901234567890123
+    // patterns
+    // yyyy-mm-dd
+    // yyyy-mm-ddThh:mm:ss
+    // yyyy-mm-ddThh:mm:ssZ
+    // yyyy-mm-ddThh:mm:ss+09:00
+    // yyyy-mm-ddThh:mm:ss.sss
+    // yyyy-mm-ddThh:mm:ss.sssZ
+    // yyyy-mm-ddThh:mm:ss.sss+09:00
+
+    typedef std::char_traits<charT> traits;
+    std::shared_ptr<typed_value<Datetime> > val =
+        std::make_shared<typed_value<Datetime> >();
+    std::basic_istringstream<charT> iss(str);
+
+    std::tm t;
+    t.tm_year = read_integer(iss, 4) - 1900;
+    if(iss.get() != '-') throw syntax_error("no - in datetime");
+    t.tm_mon  = read_integer(iss, 2) - 1;
+    if(iss.get() != '-') throw syntax_error("no - in datetime");
+    t.tm_mday = read_integer(iss, 2);
+
+    if(iss.peek() == traits::eof())
+    {
+        t.tm_sec  = 0; t.tm_min  = 0; t.tm_hour = 0;
+        const std::time_t gtime = std::mktime(&t);
+        val->value = toml::chrono::system_clock::from_time_t(
+                std::mktime(std::localtime(&gtime)));
+        return val;
+    }
+
+    if(iss.get() != 'T') throw syntax_error("no T in Datetime");
+    t.tm_hour = read_integer(iss, 2);
+    if(iss.get() != ':') throw syntax_error(":");
+    t.tm_min  = read_integer(iss, 2);
+    if(iss.get() != ':') throw syntax_error(":");
+    t.tm_sec  = read_integer(iss, 2);
+
+    bool secfrac = false;
+    toml::chrono::microseconds sfrac;
+    if(iss.peek() == '.')
+    {
+        iss.ignore();
+        secfrac = true;
+        std::basic_string<charT> numf("0.");
+        numf += get_numbers(iss);
+        std::basic_istringstream<charT> numfss(numf);
+        double subsecond;
+        numfss >> subsecond;
+        sfrac = toml::chrono::microseconds(static_cast<int>(subsecond * 1000000));
+    }
+
+    if(iss.eof()) // LOCAL
+    {
+        const std::time_t gtime = std::mktime(&t);
+        val->value = toml::chrono::system_clock::from_time_t(
+                std::mktime(std::localtime(&gtime)));
+        if(secfrac) val->value += sfrac;
+        return val;
+    }
+    else if(iss.peek() == 'Z') //GMT
+    {
+        val->value = toml::chrono::system_clock::from_time_t(std::mktime(&t));
+        if(secfrac) val->value += sfrac;
+        return val;
+    }
+    else if(iss.peek() == '+' || iss.peek() == '-') //GMT + offset
+    {
+        val->value = toml::chrono::system_clock::from_time_t(std::mktime(&t));
+        if(secfrac) val->value += sfrac;
+        apply_offset(val, iss);
+        return val;
+    }
+    else 
+    {
+        std::basic_string<charT> str;
+        while(!iss.eof()){str += iss.get(); iss.peek();}
+        std::cerr << str.c_str() << std::endl;
+        throw syntax_error("invalid datetime declaration");
+    }
+
+    }//try
+    catch(std::exception& excpt)
+    {
+        std::cerr << "exception thrown. what = " << excpt.what() << std::endl;
+        throw syntax_error("cannot parse datetime");
+    }
+}
+
+template<typename charT>
+shared_ptr<value_base>
+parse_array_value(const std::basic_string<charT>& str)
+{// TODO
+    return make_shared<array_type>();
+}
+
+template<typename charT>
+shared_ptr<value_base>
+parse_table_value(const std::basic_string<charT>& str)
+{// TODO
+    return make_shared<table_type<charT> >();
+}
+
+template<typename charT>
+shared_ptr<value_base>
+parse_value(const std::basic_string<charT>& str)
+{
+         if(is<Boolean>(str))    return parse_boolean_value<charT>(str);
+    else if(is<Integer>(str))    return parse_integer_value<charT>(str);
+    else if(is<Float>(str))      return parse_float_value<charT>(str);
+    else if(is<String>(str))     return parse_string_value<charT>(str);
+    else if(is<Datetime>(str))   return parse_datetime_value<charT>(str);
+    else if(is<array_type>(str)) return parse_array_value<charT>(str);
+    else if(is<table_type<charT> >(str)) return parse_table_value<charT>(str);
+    else throw syntax_error("parse_value: unknown type");
+}
+
+template<typename charT>
 std::basic_string<charT> parse_key(std::basic_istream<charT>& is)
 {// {{{
     charT front = is.peek();
@@ -334,16 +606,15 @@ std::basic_string<charT> parse_key(std::basic_istream<charT>& is)
     }
     else if(is.peek() == '\'')
     {
-        return parse_literal_string(read_literal_string(is));
+        return parse_literal_string_key(read_literal_string(is));
     }
     else if(is.peek() == '\"')
     {
-        return parse_basic_string(read_basic_string(is));
+        return parse_basic_string_key(read_basic_string(is));
     }
     else
         throw syntax_error("invalid key");
 }// }}}
-
 
 template<typename charT>
 std::pair<std::basic_string<charT>, shared_ptr<value_base> >
@@ -474,7 +745,7 @@ shared_ptr<value_base> make_nested_table(
         typename std::vector<std::basic_string<charT> >::const_iterator iter,
         typename std::vector<std::basic_string<charT> >::const_iterator end,
         const shared_ptr<value_base> contents, const bool is_array_of_table)
-{// for [a.b.c.d] and [[a.b.c.d]] case. {{{
+{// {{{
     if(iter == end)
     {
         if(is_array_of_table)
