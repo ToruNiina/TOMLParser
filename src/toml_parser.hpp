@@ -581,7 +581,7 @@ shared_ptr<value_base> parse_value(const std::basic_string<charT>&);
 template<typename charT>
 std::vector<std::basic_string<charT> >
 split_array(const std::basic_string<charT>& str)
-{// TODO
+{// {{{
     std::basic_istringstream<charT> iss(str);
     if(iss.peek() != '[') throw internal_error("split_array: invalid call");
 
@@ -615,7 +615,7 @@ split_array(const std::basic_string<charT>& str)
         if(iss.eof()) throw syntax_error("split_array: invalid array");
     }
     return retval;
-}
+}// }}}
 
 template<typename charT>
 shared_ptr<value_base>
@@ -644,7 +644,7 @@ parse_key_value(std::basic_istream<charT>& is);
 template<typename charT>
 std::vector<std::basic_string<charT> >
 split_table(const std::basic_string<charT>& str)
-{// TODO
+{// {{{
     std::basic_istringstream<charT> iss(str);
     if(iss.peek() != '{') throw internal_error("split_table: invalid call");
 
@@ -710,7 +710,7 @@ split_table(const std::basic_string<charT>& str)
     }
     std::cerr << "split table end" << std::endl;
     return retval;
-}
+}// }}}
 
 template<typename charT>
 shared_ptr<value_base>
