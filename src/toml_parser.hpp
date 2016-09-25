@@ -495,8 +495,8 @@ parse_datetime_value(const std::basic_string<charT>& str)
     // yyyy-mm-ddThh:mm:ss.sss+09:00
 
     typedef std::char_traits<charT> traits;
-    std::shared_ptr<typed_value<Datetime> > val =
-        std::make_shared<typed_value<Datetime> >();
+    toml::shared_ptr<typed_value<Datetime> > val =
+        toml::make_shared<typed_value<Datetime> >();
     std::basic_istringstream<charT> iss(str);
 
     std::tm t;
