@@ -276,12 +276,16 @@ template<typename charT>
 std::basic_string<charT> read_simple_value(std::basic_istream<charT>& is)
 {// {{{
     std::basic_string<charT> retval;
-    while(not is_whitespace(is.peek()) &&
-          not is_newline(is) &&
-          not comment_starts(is.peek()))
+    std::cerr << "read_simple_value: ";
+    while(not is_whitespace(is.peek()) && not is_newline(is) &&
+          not comment_starts(is.peek()) && not is.eof() &&
+          is.peek() != ',' && is.peek() != ']' && is.peek() != '}')
     {
-        retval += is.get();
+        const charT c = is.get();
+        std::cerr << c;
+        retval += c;
     }
+    std::cerr << std::endl;
     return retval;
 }// }}}
 
@@ -449,7 +453,7 @@ parse_float_value(const std::basic_string<charT>& str)
 template<typename charT>
 void apply_offset(shared_ptr<typed_value<Datetime> >& val,
                   std::basic_istringstream<charT>& iss)
-{
+{// {{{
     switch(iss.get())
     {
         case '+':
@@ -470,12 +474,12 @@ void apply_offset(shared_ptr<typed_value<Datetime> >& val,
             throw internal_error("apply_offset: invalid call");
     }
     return;
-}
+}// }}}
 
 template<typename charT>
 shared_ptr<value_base>
 parse_datetime_value(const std::basic_string<charT>& str)
-{
+{// {{{
     try{
     //           1         2
     // 012345678901234567890123
@@ -565,26 +569,170 @@ parse_datetime_value(const std::basic_string<charT>& str)
         std::cerr << "exception thrown. what = " << excpt.what() << std::endl;
         throw syntax_error("cannot parse datetime");
     }
+}// }}}
+
+// forward decl for parse_array_value and parse_table_value {{{
+template<typename charT>
+shared_ptr<value_base> parse_value(const std::basic_string<charT>&);
+// }}}
+
+template<typename charT>
+std::vector<std::basic_string<charT> >
+split_array(const std::basic_string<charT>& str)
+{// TODO
+    std::basic_istringstream<charT> iss(str);
+    if(iss.peek() != '[') throw internal_error("split_array: invalid call");
+
+    std::vector<std::basic_string<charT> > retval;
+    iss.ignore();
+    if(iss.peek() == ']') return retval;
+    while(true)
+    {
+        skip_whitespace(iss);
+        if(comment_starts(iss.peek())) skip_comment(iss);
+        skip_whitespace(iss);
+        if(is_newline(iss)){iss.ignore(); continue;}
+
+        const std::basic_string<charT> tmp = read_value(iss);
+        if(tmp.empty()) throw internal_error("split_array value is empty");
+        retval.push_back(tmp);
+
+        skip_whitespace(iss);
+        if(comment_starts(iss.peek())) skip_comment(iss);
+        skip_whitespace(iss);
+        if(is_newline(iss)) iss.ignore();
+
+        if(iss.peek() == ',') iss.ignore();
+
+        skip_whitespace(iss);
+        if(comment_starts(iss.peek())) skip_comment(iss);
+        skip_whitespace(iss);
+        if(is_newline(iss)) iss.ignore();
+
+        if(iss.peek() == ']') break;
+        if(iss.eof()) throw syntax_error("split_array: invalid array");
+    }
+    return retval;
 }
 
 template<typename charT>
 shared_ptr<value_base>
 parse_array_value(const std::basic_string<charT>& str)
+{// {{{
+    shared_ptr<array_type> retval = make_shared<array_type>();
+    std::vector<std::basic_string<charT> > splitted = split_array(str);
+    for(typename std::vector<std::basic_string<charT> >::const_iterator
+        iter = splitted.begin(); iter != splitted.end(); ++iter)
+    {
+        retval->value.push_back(parse_value(*iter));
+    }
+    return retval;
+}// }}}
+
+// forward decl for parse_table_value {{{
+template<typename charT>
+std::basic_string<charT>
+parse_key(std::basic_istream<charT>& is);
+
+template<typename charT>
+std::pair<std::basic_string<charT>, shared_ptr<value_base> >
+parse_key_value(std::basic_istream<charT>& is);
+// }}}
+
+template<typename charT>
+std::vector<std::basic_string<charT> >
+split_table(const std::basic_string<charT>& str)
 {// TODO
-    return make_shared<array_type>();
+    std::basic_istringstream<charT> iss(str);
+    if(iss.peek() != '{') throw internal_error("split_table: invalid call");
+
+    iss.ignore();
+    std::vector<std::basic_string<charT> > retval;
+    skip_whitespace(iss);
+    if(iss.peek() == '}') return retval;
+
+    std::size_t c = 0;
+    const std::basic_string<charT> equal(" = ");
+    while(true)
+    {
+        std::cerr << "now " << c << "-th loop" << std::endl;
+        skip_whitespace(iss);
+        if(comment_starts(iss.peek())) skip_comment(iss); // XXX!
+        skip_whitespace(iss);
+        if(is_newline(iss)){iss.ignore(); continue;}
+
+        std::basic_string<charT> tmp_key = parse_key(iss);
+        if(tmp_key.empty())
+            throw syntax_error("split_table: empty key");
+        std::cerr << "key " << tmp_key << std::endl;
+
+        skip_whitespace(iss);
+        if(comment_starts(iss.peek())) skip_comment(iss); // XXX!
+        skip_whitespace(iss);
+        if(is_newline(iss)) iss.ignore();
+
+        if(iss.peek() != '=')
+        {
+            const charT pe = iss.peek();
+            std::cerr << "peek = " << pe << std::endl;
+            throw syntax_error("split_table invalid inline table, no =");
+        }
+        iss.ignore();
+
+        skip_whitespace(iss);
+        if(comment_starts(iss.peek())) skip_comment(iss); // XXX!
+        skip_whitespace(iss);
+        if(is_newline(iss)) iss.ignore();
+
+        std::basic_string<charT> tmp_value = read_value(iss);
+        if(tmp_value.empty())
+            throw syntax_error("split_table: empty value");
+
+        retval.push_back(tmp_key + equal + tmp_value);
+
+        skip_whitespace(iss);
+        if(comment_starts(iss.peek())) skip_comment(iss); // XXX!
+        skip_whitespace(iss);
+        if(is_newline(iss)) iss.ignore();
+
+        if(iss.peek() == ',') iss.ignore();
+
+        skip_whitespace(iss);
+        if(comment_starts(iss.peek())) skip_comment(iss); // XXX!
+        skip_whitespace(iss);
+        if(is_newline(iss)) iss.ignore();
+
+        if(iss.peek() == '}') break;
+        if(iss.eof()) throw syntax_error("split_table: invalid inline table");
+        ++c;
+    }
+    std::cerr << "split table end" << std::endl;
+    return retval;
 }
 
 template<typename charT>
 shared_ptr<value_base>
 parse_table_value(const std::basic_string<charT>& str)
-{// TODO
-    return make_shared<table_type<charT> >();
-}
+{// {{{
+    shared_ptr<table_type<charT> > retval = make_shared<table_type<charT> >();
+    std::cerr << "parse inline table : " << str << std::endl;
+
+    std::vector<std::basic_string<charT> > splitted = split_table(str);
+    for(typename std::vector<std::basic_string<charT> >::const_iterator
+        iter = splitted.begin(); iter != splitted.end(); ++iter)
+    {
+        std::basic_istringstream<charT> iss(*iter);
+        std::pair<std::basic_string<charT>, shared_ptr<value_base> > kvpair =
+            parse_key_value(iss);
+        retval->value[kvpair.first] = kvpair.second;
+    }
+    return retval;
+}// }}}
 
 template<typename charT>
 shared_ptr<value_base>
 parse_value(const std::basic_string<charT>& str)
-{
+{// {{{
          if(is<Boolean>(str))    return parse_boolean_value<charT>(str);
     else if(is<Integer>(str))    return parse_integer_value<charT>(str);
     else if(is<Float>(str))      return parse_float_value<charT>(str);
@@ -593,7 +741,7 @@ parse_value(const std::basic_string<charT>& str)
     else if(is<array_type>(str)) return parse_array_value<charT>(str);
     else if(is<table_type<charT> >(str)) return parse_table_value<charT>(str);
     else throw syntax_error("parse_value: unknown type");
-}
+}// }}}
 
 template<typename charT>
 std::basic_string<charT> parse_key(std::basic_istream<charT>& is)
@@ -822,16 +970,6 @@ toml::Data parse(std::basic_istream<charT>& is)
             table_name = parse_table_name(is);
         shared_ptr<value_base> table_contents = parse_table(is);
         std::cerr << "parsing current table end" << std::endl;
-
-//         shared_ptr<table_type<charT> > tmp_table =
-//             dynamic_pointer_cast<table_type<charT> >(table_contents);
-//         for(auto x : tmp_table->value)
-//         {
-//             std::cerr << "key  : " << x.first << std::endl;
-//             shared_ptr<typed_value<String> > tmp_val = 
-//                 dynamic_pointer_cast<typed_value<String> >(x.second);
-//             std::cerr << "value: " << tmp_val->value << std::endl;
-//         }
 
         search_and_make_nested_table<charT>(data, table_name.second.begin(),
                 table_name.second.end(), table_contents, table_name.first);
