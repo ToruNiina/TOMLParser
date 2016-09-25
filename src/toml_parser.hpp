@@ -502,64 +502,39 @@ shared_ptr<value_base> make_nested_table(
 
 template<typename charT>
 void search_and_make_nested_table(
-        const shared_ptr<value_base> root, // must be table
+        const shared_ptr<value_base> root,
         typename std::vector<std::basic_string<charT> >::const_iterator iter,
         typename std::vector<std::basic_string<charT> >::const_iterator end,
         const shared_ptr<value_base> contents, const bool is_array_of_table)
 {// {{{
-    shared_ptr<table_type<charT> > tab =
-        dynamic_pointer_cast<table_type<charT> >(root);
-    if(!tab)
-        throw internal_error("search_and_make_nested_table: invalid call");
-
-    if(tab->value.count(*iter) == 1)// found. call this function recursively
+    if(iter == end)
     {
+        shared_ptr<array_type> arr = dynamic_pointer_cast<array_type>(root);
+        if(arr)
         {
-            shared_ptr<array_type> arr =
-                dynamic_pointer_cast<array_type>(tab->value[*iter]);
-            if(arr)
-            {
-                if(iter + 1 == end)
-                {
-                    if(!is_array_of_table)
-                        throw syntax_error("table must be array");
-                    arr->value.push_back(contents);
-                    return;
-                }
-                else
-                {
-                    if(arr->value.empty())
-                        throw internal_error("array_of_table that doesn't exist defined");
-                    shared_ptr<table_type<charT> > next
-                        = dynamic_pointer_cast<table_type<charT> >(arr->value.back());
-                    search_and_make_nested_table<charT>(
-                            next, iter+1, end, contents, is_array_of_table);
-                    return;
-                }
-            }
+            if(!is_array_of_table)
+                throw syntax_error("invalid array of table definition");
+            arr->value.push_back(contents);
+            return;
         }
-        {
-            shared_ptr<table_type<charT> > next =
-                dynamic_pointer_cast<table_type<charT> >(tab->value[*iter]);
-            if(next)
-            {
-                if(iter + 1 == end)
-                {
-                    throw syntax_error("table defined twice");
-                }
-                else
-                {
-                    search_and_make_nested_table<charT>(
-                            next, iter+1, end, contents, is_array_of_table);
-                    return;
-                }
-            }
-        }
-        throw syntax_error("table name and other value name conflicts");
+        throw syntax_error("array of table name conflicts");
     }
-    else // not found. make nested table here. and return.
+    else
     {
-        tab->value[*iter] = make_nested_table<charT>(iter + 1, end, contents, is_array_of_table);
+        shared_ptr<table_type<charT> > tab;
+
+        shared_ptr<array_type> arr = dynamic_pointer_cast<array_type>(root);
+        if(arr)
+            tab = dynamic_pointer_cast<table_type<charT> >(arr->value.back());
+        else
+            tab = dynamic_pointer_cast<table_type<charT> >(root);
+
+        if(tab->value.count(*iter) == 1)
+            search_and_make_nested_table<charT>(tab->value[*iter], iter+1, end,
+                                                contents, is_array_of_table);
+        else
+            tab->value[*iter] = make_nested_table<charT>(iter+1, end, contents,
+                                                         is_array_of_table);
         return;
     }
 }// }}}
