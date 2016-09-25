@@ -27,7 +27,13 @@
         using std::shared_ptr;
         using std::make_shared;
         using std::dynamic_pointer_cast;
-        using std::chrono::system_clock;
+        namespace chrono
+        {
+            using std::chrono::system_clock;
+            using std::chrono::hours;
+            using std::chrono::minutes;
+            using std::chrono::microseconds;
+        }
         using std::int_least64_t;
     }
 #else // c++98 only
@@ -39,7 +45,13 @@
         using boost::shared_ptr;
         using boost::make_shared;
         using boost::dynamic_pointer_cast;
-        using boost::chrono::system_clock;
+        namespace chrono
+        {
+            using boost::chrono::system_clock;
+            using boost::chrono::hours;
+            using boost::chrono::minutes;
+            using boost::chrono::microseconds;
+        }
     }
 #ifdef TOML_HAVE_STDINT_H
 #   include <stdint.h>

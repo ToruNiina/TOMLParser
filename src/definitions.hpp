@@ -17,7 +17,7 @@ typedef std::string                      String;
 typedef int_least64_t                    Integer;
 typedef double                           Float;
 typedef bool                             Boolean;
-typedef toml::system_clock::time_point   Datetime;
+typedef toml::chrono::system_clock::time_point Datetime;
 typedef std::map<std::string, shared_ptr<value_base> > Table;
 typedef Table Data;
 
