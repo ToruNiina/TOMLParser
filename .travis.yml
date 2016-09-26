@@ -1,0 +1,19 @@
+language: cpp
+os:
+- linux
+
+compiler:
+- g++
+- clang++
+
+addons:
+  apt:
+    packages:
+    - clang
+
+install:
+    - sudo apt-get update;
+    - sudo apt-get install libboost-test1.55-dev;
+
+script:
+    - cmake .; make; make test;
