@@ -3,8 +3,6 @@
 #include "definitions.hpp"
 #include "type_traits.hpp"
 #include "toml_values.hpp"
-#include <string>
-#include <memory>
 
 namespace toml
 {

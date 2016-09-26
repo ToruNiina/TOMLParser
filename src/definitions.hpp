@@ -4,9 +4,6 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <memory>
-#include <chrono>
-#include <cstdint>
 
 namespace toml
 {
@@ -17,7 +14,7 @@ typedef std::string                      String;
 typedef int_least64_t                    Integer;
 typedef double                           Float;
 typedef bool                             Boolean;
-typedef toml::chrono::system_clock::time_point Datetime;
+typedef chrono::system_clock::time_point Datetime;
 typedef std::map<std::string, shared_ptr<value_base> > Table;
 typedef Table Data;
 

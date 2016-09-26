@@ -3,7 +3,6 @@
 #include "definitions.hpp"
 #include <vector>
 #include <string>
-#include <memory>
 #include <map>
 
 namespace toml
