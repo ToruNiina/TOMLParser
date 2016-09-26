@@ -23,12 +23,12 @@ BOOST_AUTO_TEST_CASE(test_read_array)
     const std::string simple_array_result2 = toml::read_array(simple_array2);
     BOOST_CHECK_EQUAL(simple_array_result2, simple_array_str);
 
-    const std::string nested_array_str("[[1, 2, 3], [4, 5]]");
+    const std::string nested_array_str("[[1,2,3],[4,5]]");
     std::istringstream nested_array(nested_array_str);
     const std::string nested_array_result = toml::read_array(nested_array);
     BOOST_CHECK_EQUAL(nested_array_result, nested_array_str);
 
-    const std::string nested_array_str2("[[1, 2, 3], [4, 5]],  hoge");
+    const std::string nested_array_str2("[[1,2,3],[4,5]],  hoge");
     std::istringstream nested_array2(nested_array_str2);
     const std::string nested_array_result2 = toml::read_array(nested_array2);
     BOOST_CHECK_EQUAL(nested_array_result2, nested_array_str);
