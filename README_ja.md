@@ -109,8 +109,8 @@ C++98を用いる場合、いくつかの型名や仕様できるメソッドが
 
 ## Documentation
 
-このライブラリでは、全てのTOML型は```toml::value_base```から派生しています。上記の
-```toml::ValueBase```は、```toml::shared_ptr<toml::value_base>```のエイリアスです。
+このライブラリでは、全てのTOML型は```toml::value_base```から派生しています。
+上記の```toml::ValueBase```は、```toml::shared_ptr<toml::value_base>```のエイリアスです。
 
 TOMLの型名は以下の様になっています。
 
