@@ -39,6 +39,12 @@
 #else // c++98 only
 #   include <boost/shared_ptr.hpp>
 #   include <boost/make_shared.hpp>
+#   ifndef BOOST_ERROR_CODE_HEADER_ONLY
+#   define BOOST_ERROR_CODE_HEADER_ONLY
+#   endif
+#   ifndef BOOST_CHRONO_INLINED
+#   define BOOST_CHRONO_INLINED
+#   endif
 #   include <boost/chrono.hpp>
     namespace toml
     {
