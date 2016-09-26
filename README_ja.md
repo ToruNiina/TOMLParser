@@ -124,7 +124,7 @@ TOMLの型名は以下の様になっています。
 | Array     | toml::Array< typename T > | std::vector < T >                 |
 | Table     | toml::Table          | std::map< std::string, std::shared\_ptr < toml::value\_base > > |
 
-```toml::Data```は，実際には単なる```toml::Table```の```typedef```です。
+サンプルコードにあった```toml::Data```は，実際には単なる```toml::Table```の```typedef```です。
 
 C++98の場合、template usingが使えないため```toml::Array<T>```はtype generatorとなります。
 さらに、```std::map```に```at```メソッドが存在しないため、```toml::Table```の
@@ -132,7 +132,7 @@ C++98の場合、template usingが使えないため```toml::Array<T>```はtype 
 
 また，```std::chrono```や```std::int_least64_t```や```std::shared_ptr```が存在
 しないため、これらは```boost::chrono```，```boost::int\_least64\_t```，
-```boost::shared_ptr```に置き換わります。
+そして```boost::shared_ptr```に置き換わります。
 
 | TOML型    | このパーサ内での型名 | c++98での実際のデータ型                |
 |:----------|:---------------------|:---------------------------------------|
