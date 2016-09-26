@@ -97,9 +97,9 @@ In this case, ```toml::ValueBase``` will help you.
     std::vector<toml::ValueBase> array_of_array =
         toml::get<toml::Array<toml::ValueBase>>(data.at("array_of_array"));
     std::vector<double> first_array =
-        toml::get<toml::Float>(array_of_array.at(0));
+        toml::get<toml::Array<toml::Float>>(array_of_array.at(0));
     std::vector<std::string> second_array =
-        toml::get<toml::String>(array_of_array.at(1));
+        toml::get<toml::Array<toml::String>>(array_of_array.at(1));
 ```
 
 In C++98, some of the types and methods are different.
@@ -139,7 +139,7 @@ Additionally, there are no ```std::chrono```, ```std::int_least64_t``` and
 | Float     | toml::Float          | double                                 |
 | String    | toml::String         | std::string                            |
 | Datetime  | toml::Datetime       | boost::chrono::system\_clock::time\_point|
-| Array     | toml::Array< typename T > | std::vector < T >                 |
+| Array     | toml::Array< typename T >::type | std::vector < T >                 |
 | Table     | toml::Table          | std::map< std::string, boost::shared\_ptr < toml::value\_base > > |
 
 So, the different part of the code in C++98 is below.

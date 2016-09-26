@@ -99,9 +99,9 @@ int main()
     std::vector<toml::ValueBase> array_of_array =
         toml::get<toml::Array<toml::ValueBase>>(data.at("array_of_array"));
     std::vector<double> first_array =
-        toml::get<toml::Float>(array_of_array.at(0));
+        toml::get<toml::Array<toml::Float>>(array_of_array.at(0));
     std::vector<std::string> second_array =
-        toml::get<toml::String>(array_of_array.at(1));
+        toml::get<toml::Array<toml::String>>(array_of_array.at(1));
 ```
 
 C++98を用いる場合、いくつかの型名や仕様できるメソッドが異なります。
@@ -144,7 +144,7 @@ C++98の場合、template usingが使えないため```toml::Array<T>```はtype 
 | Float     | toml::Float          | double                                 |
 | String    | toml::String         | std::string                            |
 | Datetime  | toml::Datetime       | boost::chrono::system\_clock::time\_point|
-| Array     | toml::Array< typename T > | std::vector < T >                 |
+| Array     | toml::Array< typename T >::type | std::vector < T >                 |
 | Table     | toml::Table          | std::map< std::string, boost::shared\_ptr < toml::value\_base > > |
 
 よって、C++98でのコードで異なる部分は、以下の様になります。
