@@ -2,54 +2,9 @@
 #define TOML_TYPE_TRAITS
 #include "definitions.hpp"
 #include "toml_values.hpp"
-#include <type_traits>
 
 namespace toml
 {
-
-template<typename T>
-struct is_toml_type : public std::false_type{};
-template<>
-struct is_toml_type<Boolean>   : public std::true_type{};
-template<>
-struct is_toml_type<Integer>   : public std::true_type{};
-template<>
-struct is_toml_type<Float>     : public std::true_type{};
-template<>
-struct is_toml_type<String>    : public std::true_type{};
-template<>
-struct is_toml_type<Datetime>  : public std::true_type{};
-template<typename T>
-struct is_toml_type<Array<T> > : public std::true_type{};
-template<>                    
-struct is_toml_type<Table>     : public std::true_type{};
-
-#ifndef TOML_ENABLE_CXX11
-// in c++98 case, use std::vector as Array for simplicity.
-template<typename T>
-struct is_toml_type<std::vector<T> > : public std::true_type{};
-#endif
-
-template<typename T>
-struct is_toml_simple_type : public std::false_type{};
-template<>
-struct is_toml_simple_type<Boolean>  : public std::true_type{};
-template<>
-struct is_toml_simple_type<Integer>  : public std::true_type{};
-template<>
-struct is_toml_simple_type<Float>    : public std::true_type{};
-template<>
-struct is_toml_simple_type<String>   : public std::true_type{};
-template<>
-struct is_toml_simple_type<Datetime> : public std::true_type{};
-
-template<typename T>
-struct is_toml_struct : public std::false_type{};
-template<>
-struct is_toml_struct<array_type> : public std::true_type{};
-template<typename charT>
-struct is_toml_struct<table_type<charT> > : public std::true_type{};
-
 template<typename T>
 struct map_key_charactor_helper{};
 template<typename charT>
