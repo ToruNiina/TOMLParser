@@ -1,6 +1,9 @@
 TOMLParser
 ====
 
+[![Build Status](https://travis-ci.org/ToruNiina/TOMLParser.svg?branch=travis)](https://travis-ci.org/ToruNiina/TOMLParser)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
+
 C++用のheader-onlyなTOML parserです。
 
 [TOML v0.4.0](http://github.com/toml-lang/toml/blob/master/README.md)に対応しています。
