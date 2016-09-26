@@ -4,6 +4,7 @@ set(TEST_NAMES
     test_utility
     test_bare_key
     test_read_value
+    test_parse_value
     )
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/)
