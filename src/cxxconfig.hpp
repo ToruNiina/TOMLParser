@@ -42,8 +42,14 @@
 #   ifndef BOOST_ERROR_CODE_HEADER_ONLY
 #   define BOOST_ERROR_CODE_HEADER_ONLY
 #   endif
-#   ifndef BOOST_CHRONO_INLINED
-#   define BOOST_CHRONO_INLINED
+#   ifndef BOOST_SYSTEM_NO_LIB
+#   define BOOST_SYSTEM_NO_LIB
+#   endif
+#   ifndef BOOST_CHRONO_HEADER_ONLY
+#   define BOOST_CHRONO_HEADER_ONLY
+#   endif
+#   ifndef BOOST_CHRONO_INLINE
+#   define BOOST_CHRONO_INLINE inline
 #   endif
 #   include <boost/chrono.hpp>
     namespace toml
@@ -59,19 +65,18 @@
             using boost::chrono::microseconds;
         }
     }
-#ifdef TOML_HAVE_STDINT_H
-#   include <stdint.h>
-    namespace toml
-    {
-        using ::int_least64_t;
-    }
-#else
-#   include <boost/cstdint.hpp>
-    namespace toml
-    {
-        using boost::int_least64_t;
-    }
-#endif
-
+#   ifdef TOML_HAVE_STDINT_H
+#       include <stdint.h>
+        namespace toml
+        {
+            using ::int_least64_t;
+        }
+#   else
+#       include <boost/cstdint.hpp>
+        namespace toml
+        {
+            using boost::int_least64_t;
+        }
+#   endif
 #endif // c++11
 #endif /* TOML_CXX_CONFIG */
