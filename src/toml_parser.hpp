@@ -311,13 +311,13 @@ template<typename charT>
 std::basic_string<charT>
 parse_literal_string_key(const std::basic_string<charT>& str)
 {// {{{
-    if(str.size() > 3 && str.substr(0, 3) == "\'\'\'")
+    if(str.size() > 6 && str.substr(0, 3) == "\'\'\'")
     {
-        if(str.at(4) == '\n')
+        if(str.at(3) == '\n')
         {
             return std::basic_string<charT>(str.begin()+4, str.end()-3);
         }
-        else if(str.at(4) == '\r' && str.at(5) == '\n')
+        else if(str.at(3) == '\r' && str.at(4) == '\n')
         {
             return std::basic_string<charT>(str.begin()+5, str.end()-3);
         }
