@@ -23,3 +23,9 @@ foreach(TEST_NAME ${TEST_NAMES})
     target_link_libraries(${TEST_NAME} ${test_library_dependencies})
     add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 endforeach(TEST_NAME)
+
+add_executable(test_file_reading_test test_file_reading_test.cpp)
+target_link_libraries(test_file_reading_test ${test_library_dependencies})
+add_test(NAME test_file_reading_test COMMAND test_file_reading_test
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test)
+
