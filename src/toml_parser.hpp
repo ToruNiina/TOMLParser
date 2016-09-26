@@ -64,6 +64,19 @@ void skip_comment(std::basic_istream<charT>& is)
 }//}}}
 
 template<typename charT>
+void skip_ignorable(std::basic_istream<charT>& is)
+{//{{{
+    while(not is.eof())
+    {
+        if(is_whitespace(is.peek())) skip_whitespace(is);
+        else if(is_newline(is)) is.ignore();
+        else if(comment_starts(is.peek())) skip_comment(is);
+        else break;
+    }
+    return ;
+}//}}}
+
+template<typename charT>
 inline bool is_bare_key_component(const charT c)
 {//{{{
          if('a' <= c && c <= 'z') return true;
@@ -81,23 +94,39 @@ std::basic_string<charT> read_bare_key(std::basic_istream<charT>& is)
     return bare_key;
 }//}}}
 
+// forward decl for read_array {{{
+template<typename charT>
+std::basic_string<charT> read_value(std::basic_istream<charT>& is);
+// }}}
+
 template<typename charT>
 std::basic_string<charT> read_array(std::basic_istream<charT>& is)
 {//{{{
     if(is.peek() != '[') throw internal_error("read_array: invalid call");
 
     std::basic_string<charT> retval;
-    std::size_t counter = 0;
+    retval += is.get();
     while(true)
     {
-        if(is.peek() == '[')
-            ++counter;
-        else if(is.peek() == ']')
-            --counter;
-        retval += is.get();
+        skip_ignorable(is);
 
-        if(counter == 0) return retval;
-        if(is.eof()) throw syntax_error("non-closed array");
+        const std::basic_string<charT> tmp = read_value(is);
+        if(tmp.empty()) throw internal_error("read_array value is empty");
+        std::cerr << "tmp = " << tmp << std::endl;
+        retval += tmp;
+
+        skip_ignorable(is);
+
+        if(is.peek() == ',') retval += is.get();
+
+        skip_ignorable(is);
+        
+        if(is.peek() == ']')
+        {
+            retval += is.get();
+            return retval;
+        }
+        if(is.eof()) throw syntax_error("split_array: invalid array");
     }
 }//}}}
 
@@ -590,26 +619,17 @@ split_array(const std::basic_string<charT>& str)
     if(iss.peek() == ']') return retval;
     while(true)
     {
-        skip_whitespace(iss);
-        if(comment_starts(iss.peek())) skip_comment(iss);
-        skip_whitespace(iss);
-        if(is_newline(iss)){iss.ignore(); continue;}
+        skip_ignorable(iss);
 
         const std::basic_string<charT> tmp = read_value(iss);
         if(tmp.empty()) throw internal_error("split_array value is empty");
         retval.push_back(tmp);
 
-        skip_whitespace(iss);
-        if(comment_starts(iss.peek())) skip_comment(iss);
-        skip_whitespace(iss);
-        if(is_newline(iss)) iss.ignore();
+        skip_ignorable(iss);
 
         if(iss.peek() == ',') iss.ignore();
 
-        skip_whitespace(iss);
-        if(comment_starts(iss.peek())) skip_comment(iss);
-        skip_whitespace(iss);
-        if(is_newline(iss)) iss.ignore();
+        skip_ignorable(iss);
 
         if(iss.peek() == ']') break;
         if(iss.eof()) throw syntax_error("split_array: invalid array");
@@ -653,26 +673,18 @@ split_table(const std::basic_string<charT>& str)
     skip_whitespace(iss);
     if(iss.peek() == '}') return retval;
 
-    std::size_t c = 0;
     const std::basic_string<charT> equal(" = ");
     while(true)
     {
-        std::cerr << "now " << c << "-th loop" << std::endl;
-        skip_whitespace(iss);
-        if(comment_starts(iss.peek())) skip_comment(iss); // XXX!
-        skip_whitespace(iss);
-        if(is_newline(iss)){iss.ignore(); continue;}
+        skip_ignorable(iss);
 
         std::basic_string<charT> tmp_key = parse_key(iss);
         if(tmp_key.empty())
             throw syntax_error("split_table: empty key");
         std::cerr << "key " << tmp_key << std::endl;
 
-        skip_whitespace(iss);
-        if(comment_starts(iss.peek())) skip_comment(iss); // XXX!
-        skip_whitespace(iss);
-        if(is_newline(iss)) iss.ignore();
-
+        skip_ignorable(iss);
+        
         if(iss.peek() != '=')
         {
             const charT pe = iss.peek();
@@ -681,10 +693,7 @@ split_table(const std::basic_string<charT>& str)
         }
         iss.ignore();
 
-        skip_whitespace(iss);
-        if(comment_starts(iss.peek())) skip_comment(iss); // XXX!
-        skip_whitespace(iss);
-        if(is_newline(iss)) iss.ignore();
+        skip_ignorable(iss);
 
         std::basic_string<charT> tmp_value = read_value(iss);
         if(tmp_value.empty())
@@ -692,21 +701,14 @@ split_table(const std::basic_string<charT>& str)
 
         retval.push_back(tmp_key + equal + tmp_value);
 
-        skip_whitespace(iss);
-        if(comment_starts(iss.peek())) skip_comment(iss); // XXX!
-        skip_whitespace(iss);
-        if(is_newline(iss)) iss.ignore();
+        skip_ignorable(iss);
 
         if(iss.peek() == ',') iss.ignore();
 
-        skip_whitespace(iss);
-        if(comment_starts(iss.peek())) skip_comment(iss); // XXX!
-        skip_whitespace(iss);
-        if(is_newline(iss)) iss.ignore();
+        skip_ignorable(iss);
 
         if(iss.peek() == '}') break;
         if(iss.eof()) throw syntax_error("split_table: invalid inline table");
-        ++c;
     }
     std::cerr << "split table end" << std::endl;
     return retval;
