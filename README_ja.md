@@ -3,7 +3,7 @@ TOMLParser
 
 C++用のheader-onlyなTOML parserです。
 
-TOML v0.4.0に対応しています。
+[TOML v0.4.0](http://github.com/toml-lang/toml/blob/master/README.md)に対応しています。
 
 C++11が使える場合、標準ライブラリにしか依存しません。
 そうでなければ、Boost C++ Libraryに依存します。
@@ -86,7 +86,7 @@ int main()
 }
 ```
 
-toml::get<T>関数は便利ですが、特性上以下のような型にはそのままでは使えません。
+```toml::get<T>```関数は便利ですが、特性上以下のような型にはそのままでは使えません。
 ```toml
     array_of_array = [[1.0, 2.0, 3.0], ["a", "b", "c"]]
 ```
@@ -109,8 +109,8 @@ C++98を用いる場合、いくつかの型名や仕様できるメソッドが
 
 ## Documentation
 
-このライブラリでは、全てのTOML型はtoml::value_baseから派生しています。上記の
-toml::ValueBaseは、toml::shared_ptr<toml::value_base>のエイリアスです。
+このライブラリでは、全てのTOML型は```toml::value_base```から派生しています。上記の
+```toml::ValueBase```は、```toml::shared_ptr<toml::value_base>```のエイリアスです。
 
 TOMLの型名は以下の様になっています。
 
@@ -124,14 +124,15 @@ TOMLの型名は以下の様になっています。
 | Array     | toml::Array< typename T > | std::vector < T >                 |
 | Table     | toml::Table          | std::map< std::string, std::shared\_ptr < toml::value\_base > > |
 
-toml::Dataは，実際には単なるtoml::Tableのtypedefです。
+```toml::Data```は，実際には単なる```toml::Table```の```typedef```です。
 
-C++98の場合、template usingが使えないためtoml::Array<T>はtype generatorとなります。
-さらに、std::mapにatメソッドが存在しないため、toml::Tableの要素アクセスには
-operator[]を用いる必要があります。
+C++98の場合、template usingが使えないため```toml::Array<T>```はtype generatorとなります。
+さらに、```std::map```に```at```メソッドが存在しないため、```toml::Table```の
+要素アクセスには```operator[]```を用いる必要があります。
 
-また，std::chronoやstd::int\_least64\_tやstd::shared_ptrが存在しないため、これらは
-boost::chrono，boost::int\_least64\_t，boost::shared_ptrに置き換わります。
+また，```std::chrono```や```std::int_least64_t```や```std::shared_ptr```が存在
+しないため、これらは```boost::chrono```，```boost::int\_least64\_t```，
+```boost::shared_ptr```に置き換わります。
 
 | TOML型    | このパーサ内での型名 | c++98での実際のデータ型                |
 |:----------|:---------------------|:---------------------------------------|
