@@ -112,7 +112,7 @@ std::basic_string<charT> read_array(std::basic_istream<charT>& is)
 
         const std::basic_string<charT> tmp = read_value(is);
         if(tmp.empty()) throw internal_error("read_array value is empty");
-        std::cerr << "tmp = " << tmp << std::endl;
+
         retval += tmp;
 
         skip_ignorable(is);
@@ -126,7 +126,11 @@ std::basic_string<charT> read_array(std::basic_istream<charT>& is)
             retval += is.get();
             return retval;
         }
-        if(is.eof()) throw syntax_error("split_array: invalid array");
+        if(is.eof())
+        {
+            std::cerr << "line: " << line_number(is) << std::endl;
+            throw syntax_error("split_array: invalid array");
+        }
     }
 }//}}}
 
@@ -147,7 +151,11 @@ std::basic_string<charT> read_inline_table(std::basic_istream<charT>& is)
         retval += is.get();
 
         if(counter == 0) return retval;
-        if(is.eof()) throw syntax_error("non-closed inline table");
+        if(is.eof())
+        {
+            std::cerr << "line: " << line_number(is) << std::endl;
+            throw syntax_error("non-closed inline table");
+        }
     }
 }//}}}
 
@@ -174,7 +182,7 @@ std::basic_string<charT> read_basic_string(std::basic_istream<charT>& is)
     {
         if(is.eof())
         {
-            std::cerr << "is_multi_line " << multi_line << std::endl;
+            std::cerr << "line: " << line_number(is) << std::endl;
             throw syntax_error("read_basic_string: unexpected EOF");
         }
         switch(is.peek())
@@ -198,7 +206,6 @@ std::basic_string<charT> read_basic_string(std::basic_istream<charT>& is)
                 {
                     ++quote_count;
                     retval += is.get();
-                    std::cerr << "now quote count = " << quote_count << std::endl;
                     if(quote_count == 3) return retval;
                     break;
                 }
@@ -211,7 +218,10 @@ std::basic_string<charT> read_basic_string(std::basic_istream<charT>& is)
             case '\n':
             {
                 if(not multi_line)
+                {
+                    std::cerr << "line: " << line_number(is) << std::endl;
                    throw syntax_error("read_basic_string: unexpected LF");
+                }
                 else
                     retval += is.get();
                 escaping = false;
@@ -250,7 +260,10 @@ std::basic_string<charT> read_literal_string(std::basic_istream<charT>& is)
     while(true)
     {
         if(is.eof())
+        {
+            std::cerr << "line: " << line_number(is) << std::endl;
             throw syntax_error("read_literal_string: unexpected EOF");
+        }
         switch(is.peek())
         {
             case '\'':
@@ -271,7 +284,10 @@ std::basic_string<charT> read_literal_string(std::basic_istream<charT>& is)
             case '\n':
             {
                 if(not multi_line)
+                {
+                    std::cerr << "line: " << line_number(is) << std::endl;
                     throw syntax_error("read_literal_string: unexpected LF");
+                }
                 else
                     retval += is.get();
                 quote_count = 0;
@@ -305,16 +321,13 @@ template<typename charT>
 std::basic_string<charT> read_simple_value(std::basic_istream<charT>& is)
 {// {{{
     std::basic_string<charT> retval;
-    std::cerr << "read_simple_value: ";
+
     while(not is_whitespace(is.peek()) && not is_newline(is) &&
           not comment_starts(is.peek()) && not is.eof() &&
           is.peek() != ',' && is.peek() != ']' && is.peek() != '}')
     {
-        const charT c = is.get();
-        std::cerr << c;
-        retval += c;
+        retval += is.get();
     }
-    std::cerr << std::endl;
     return retval;
 }// }}}
 
@@ -490,14 +503,20 @@ void apply_offset(shared_ptr<typed_value<Datetime> >& val,
         case '+':
         {
             val->value += toml::chrono::hours(read_integer(iss, 2));
-            if(iss.get() != ':') throw syntax_error("no : in datetime offset");
+            if(iss.get() != ':')
+            {
+                throw syntax_error("no : in datetime offset");
+            }
             val->value += toml::chrono::minutes(read_integer(iss, 2));
             break;
         }
         case '-':
         {
             val->value -= toml::chrono::hours(read_integer(iss, 2));
-            if(iss.get() != ':') throw syntax_error("no : in datetime offset");
+            if(iss.get() != ':')
+            {
+                throw syntax_error("no : in datetime offset");
+            }
             val->value -= toml::chrono::minutes(read_integer(iss, 2));
             break;
         }
@@ -530,9 +549,15 @@ parse_datetime_value(const std::basic_string<charT>& str)
 
     std::tm t;
     t.tm_year = read_integer(iss, 4) - 1900;
-    if(iss.get() != '-') throw syntax_error("no - in datetime");
+    if(iss.get() != '-')
+    {
+        throw syntax_error("no - in datetime");
+    }
     t.tm_mon  = read_integer(iss, 2) - 1;
-    if(iss.get() != '-') throw syntax_error("no - in datetime");
+    if(iss.get() != '-')
+    {
+        throw syntax_error("no - in datetime");
+    }
     t.tm_mday = read_integer(iss, 2);
 
     if(iss.peek() == traits::eof())
@@ -544,11 +569,20 @@ parse_datetime_value(const std::basic_string<charT>& str)
         return val;
     }
 
-    if(iss.get() != 'T') throw syntax_error("no T in Datetime");
+    if(iss.get() != 'T')
+    {
+        throw syntax_error("no T in Datetime");
+    }
     t.tm_hour = read_integer(iss, 2);
-    if(iss.get() != ':') throw syntax_error(":");
+    if(iss.get() != ':')
+    {
+        throw syntax_error(":");
+    }
     t.tm_min  = read_integer(iss, 2);
-    if(iss.get() != ':') throw syntax_error(":");
+    if(iss.get() != ':')
+    {
+        throw syntax_error(":");
+    }
     t.tm_sec  = read_integer(iss, 2);
 
     bool secfrac = false;
@@ -588,9 +622,6 @@ parse_datetime_value(const std::basic_string<charT>& str)
     }
     else 
     {
-        std::basic_string<charT> str;
-        while(!iss.eof()){str += iss.get(); iss.peek();}
-        std::cerr << str.c_str() << std::endl;
         throw syntax_error("invalid datetime declaration");
     }
 
@@ -632,7 +663,10 @@ split_array(const std::basic_string<charT>& str)
         skip_ignorable(iss);
 
         if(iss.peek() == ']') break;
-        if(iss.eof()) throw syntax_error("split_array: invalid array");
+        if(iss.eof())
+        {
+            throw syntax_error("split_array: invalid array");
+        }
     }
     return retval;
 }// }}}
@@ -680,15 +714,14 @@ split_table(const std::basic_string<charT>& str)
 
         std::basic_string<charT> tmp_key = parse_key(iss);
         if(tmp_key.empty())
+        {
             throw syntax_error("split_table: empty key");
-        std::cerr << "key " << tmp_key << std::endl;
+        }
 
         skip_ignorable(iss);
         
         if(iss.peek() != '=')
         {
-            const charT pe = iss.peek();
-            std::cerr << "peek = " << pe << std::endl;
             throw syntax_error("split_table invalid inline table, no =");
         }
         iss.ignore();
@@ -697,7 +730,9 @@ split_table(const std::basic_string<charT>& str)
 
         std::basic_string<charT> tmp_value = read_value(iss);
         if(tmp_value.empty())
+        {
             throw syntax_error("split_table: empty value");
+        }
 
         retval.push_back(tmp_key + equal + tmp_value);
 
@@ -708,9 +743,11 @@ split_table(const std::basic_string<charT>& str)
         skip_ignorable(iss);
 
         if(iss.peek() == '}') break;
-        if(iss.eof()) throw syntax_error("split_table: invalid inline table");
+        if(iss.eof())
+        {
+            throw syntax_error("split_table: invalid inline table");
+        }
     }
-    std::cerr << "split table end" << std::endl;
     return retval;
 }// }}}
 
@@ -719,7 +756,6 @@ shared_ptr<value_base>
 parse_table_value(const std::basic_string<charT>& str)
 {// {{{
     shared_ptr<table_type<charT> > retval = make_shared<table_type<charT> >();
-    std::cerr << "parse inline table : " << str << std::endl;
 
     std::vector<std::basic_string<charT> > splitted = split_table(str);
     for(typename std::vector<std::basic_string<charT> >::const_iterator
@@ -751,7 +787,6 @@ template<typename charT>
 std::basic_string<charT> parse_key(std::basic_istream<charT>& is)
 {// {{{
     charT front = is.peek();
-    std::cerr << "parse key: front = " << front << std::endl;
     if(is_bare_key_component(is.peek()))
     {
         return read_bare_key(is);
@@ -765,7 +800,10 @@ std::basic_string<charT> parse_key(std::basic_istream<charT>& is)
         return parse_basic_string_key(read_basic_string(is));
     }
     else
+    {
+        std::cerr << "line: " << line_number(is) << std::endl;
         throw syntax_error("invalid key");
+    }
 }// }}}
 
 template<typename charT>
@@ -773,19 +811,16 @@ std::pair<std::basic_string<charT>, shared_ptr<value_base> >
 parse_key_value(std::basic_istream<charT>& is)
 {// {{{
     std::basic_string<charT> key = parse_key(is);
-    std::cerr << "parse_key_value key = (" << key << ") read" << std::endl;
 
     skip_whitespace(is);
     if(is.peek() != '=')
     {
-        std::cerr << key << std::endl;
-        std::cerr << "line " << line_number(is) << std::endl;
+        std::cerr << "line: " << line_number(is) << std::endl;
         throw syntax_error("no \'=\' after key in key-value line");
     }
     is.ignore();
     skip_whitespace(is);
     std::basic_string<charT> value = read_value(is);
-    std::cerr << "parse_key_value: value = (" << value << ") read" << std::endl;
 
     return std::make_pair(key, parse_value(value));
 }// }}}
@@ -849,11 +884,17 @@ parse_table_name(std::basic_istream<charT>& is)
     while(true)
     {
         if(is.eof())
+        {
+            std::cerr << "line: " << line_number(is) << std::endl;
             throw syntax_error("parse_table_name: unexpected EOF");
+        }
         skip_whitespace(is);
         std::basic_string<charT> tmp = parse_key(is);
-        std::cerr << "table name key (" << tmp << ") read. is_array = "<< is_array_of_table << std::endl;
-        if(tmp.empty()) throw syntax_error("empty key");
+        if(tmp.empty())
+        {
+            std::cerr << "line: " << line_number(is) << std::endl;
+            throw syntax_error("empty key");
+        }
         name.push_back(tmp);
         skip_whitespace(is);
         if(is.peek() == '.')
@@ -865,7 +906,10 @@ parse_table_name(std::basic_istream<charT>& is)
         {
             is.ignore();
             if(is.peek() != ']')
+            {
+                std::cerr << "line: " << line_number(is) << std::endl;
                 throw syntax_error("invalid array_of_table definition");
+            }
             is.ignore();
             break;
         }
@@ -876,8 +920,7 @@ parse_table_name(std::basic_istream<charT>& is)
         }
         else
         {
-            std::cerr << "now line "<< line_number(is) << std::endl;
-            std::cerr << "tmp = " << tmp << std::endl;
+            std::cerr << "line: "<< line_number(is) << std::endl;
             throw syntax_error("invalid table definition");
         }
     }
@@ -887,7 +930,11 @@ parse_table_name(std::basic_istream<charT>& is)
     skip_whitespace(is);
     if(is_newline(is)) is.ignore();
     else if(comment_starts(is.peek())) skip_comment(is);
-    else throw syntax_error("something exists after table declaration");
+    else 
+    {
+        std::cerr << "line: "<< line_number(is) << std::endl;
+        throw syntax_error("something exists after table declaration");
+    }
 
     return std::make_pair(is_array_of_table, name);
 }//}}}
@@ -902,20 +949,17 @@ shared_ptr<value_base> make_nested_table(
     {
         if(is_array_of_table)
         {
-            std::cerr << "create leaf of nested array_of_table." << std::endl;
             shared_ptr<array_type> aot = make_shared<array_type>();
             aot->value.push_back(contents);
             return aot;
         }
         else
         {
-            std::cerr << "create leaf of nested table." << std::endl;
             return contents;
         }
     }
     else
     {
-        std::cerr << "create node of nested table that name is " << *iter << std::endl;
         shared_ptr<table_type<charT> > tmp = make_shared<table_type<charT> >();
         tmp->value[*iter] = make_nested_table<charT>(
                 iter + 1, end, contents, is_array_of_table);
@@ -936,7 +980,9 @@ void search_and_make_nested_table(
         if(arr)
         {
             if(!is_array_of_table)
+            {
                 throw syntax_error("invalid array of table definition");
+            }
             arr->value.push_back(contents);
             return;
         }
@@ -969,16 +1015,13 @@ toml::Data parse(std::basic_istream<charT>& is)
 
     while(!is.eof())
     {
-        std::cerr << "now " << line_number(is) << std::endl;
         const std::pair<bool, std::vector<std::basic_string<charT> > >
             table_name = parse_table_name(is);
         shared_ptr<value_base> table_contents = parse_table(is);
-        std::cerr << "parsing current table end" << std::endl;
 
         search_and_make_nested_table<charT>(data, table_name.second.begin(),
                 table_name.second.end(), table_contents, table_name.first);
     }
-    std::cerr << "parse end" << std::endl;
     return data->value;                 
 }// }}}
 
