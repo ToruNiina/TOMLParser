@@ -1,6 +1,8 @@
 TOMLParser
 ====
 
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
+
 C++ header-only TOML Parser.
 
 TOMLParser supports [TOML v0.4.0](http://github.com/toml-lang/toml/blob/master/README.md).
