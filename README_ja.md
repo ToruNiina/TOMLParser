@@ -19,33 +19,62 @@ header-onlyなので、インクルードパスを通し、インクルードす
 
 使い方は非常に単純です。
 
+まず、パースする時は、```toml::Data toml::parse(std::basic_istream<charT>&)```を
+用います。
+
+```cpp
+std::ifstream ifs("sample.toml");
+toml::Data data = toml::parse(ifs);
+```
+
+値は```T toml::get<T>```関数によって取得できます。
+
+```toml
+title = "title"
+```
+
+```cpp
+std::string title = toml::get<toml::String>(data.at("title")); // "title"
+```
+
+関数```toml::get<T>```は、Arrayに対しても使用できます。
+
+```toml
+array = [3, 3.1, 3.14, 3.141, 3.1415]
+```
+
+```cpp
+// {3, 3.1, 3.14, 3.141, 3.1415}
+std::vector<double> array = toml::get<toml::Array<toml::Float>>(data.at("array"));
+```
+
 以下の様なTOMLファイルがあるとき、
 
 ```toml
-    # sample.toml
-    title = "this is sample"
+# sample.toml
+title = "this is sample"
 
-    [table]
-    number = +100_000
-    reals  = [-1.1e+2, 2.0, 3.0]
-    nested_array = [[true, false], # this is a comment.
-                    [true],
-                    [false]]
-    date = 1979-05-27
-    inline_table = {name = "inline table"}
-    array_of_inline_table = [
-        {key = "array"},
-        {key = "of"},
-        {key = "inline"},
-        {key = "table"},
-        ]
+[table]
+number = +100_000
+reals  = [-1.1e+2, 2.0, 3.0]
+nested_array = [[true, false], # this is a comment.
+                [true],
+                [false]]
+date = 1979-05-27
+inline_table = {name = "inline table"}
+array_of_inline_table = [
+    {key = "array"},
+    {key = "of"},
+    {key = "inline"},
+    {key = "table"},
+    ]
 
-    [[array_of_table]]
-    foobar = 1
-    [[array_of_table]]
-    foobar = 2
-    [[array_of_table]]
-    foobar = 3
+[[array_of_table]]
+foobar = 1
+[[array_of_table]]
+foobar = 2
+[[array_of_table]]
+foobar = 3
 ```
 
 以下のコードによってファイル内のデータを取得できます(c++11の場合)。
@@ -81,9 +110,9 @@ int main()
 
     std::vector<toml::Table> array_of_table = 
         toml::get<toml::Array<toml::Table>>(table.at("array_of_table"));
-    int foobar0 = toml::get<toml::Integer>(array_of_table.at(0).at("foobar"));
-    int foobar1 = toml::get<toml::Integer>(array_of_table.at(1).at("foobar"));
-    int foobar2 = toml::get<toml::Integer>(array_of_table.at(2).at("foobar"));
+    std::int_least64_t foobar0 = toml::get<toml::Integer>(array_of_table.at(0).at("foobar"));
+    std::int_least64_t foobar1 = toml::get<toml::Integer>(array_of_table.at(1).at("foobar"));
+    std::int_least64_t foobar2 = toml::get<toml::Integer>(array_of_table.at(2).at("foobar"));
 
     return 0;
 }
@@ -92,18 +121,18 @@ int main()
 関数```toml::get<T>```は便利ですが、特性上以下のような型にはそのままでは使えません。
 
 ```toml
-    array_of_array = [[1.0, 2.0, 3.0], ["a", "b", "c"]]
+array_of_array = [[1.0, 2.0, 3.0], ["a", "b", "c"]]
 ```
 
 この場合、toml::ValueBaseを用います。
 
 ```cpp
-    std::vector<toml::ValueBase> array_of_array =
-        toml::get<toml::Array<toml::ValueBase>>(data.at("array_of_array"));
-    std::vector<double> first_array =
-        toml::get<toml::Array<toml::Float>>(array_of_array.at(0));
-    std::vector<std::string> second_array =
-        toml::get<toml::Array<toml::String>>(array_of_array.at(1));
+std::vector<toml::ValueBase> array_of_array =
+    toml::get<toml::Array<toml::ValueBase>>(data.at("array_of_array"));
+std::vector<double> first_array =
+    toml::get<toml::Array<toml::Float>>(array_of_array.at(0));
+std::vector<std::string> second_array =
+    toml::get<toml::Array<toml::String>>(array_of_array.at(1));
 ```
 
 C++98を用いる場合、いくつかの型名や仕様できるメソッドが異なります。
@@ -174,7 +203,17 @@ boost/chronoをヘッダオンリーで使用しようとすることに起因�
 できません。Boost/chronoを用いる場合は、Boostの公式サイトからソースコードを
 含めてダウンロードし、Include pathを通すようにしてください。
 
+### Excpetions
 
+もし文法が正しくなかった場合、```toml::parse```は```toml::syntax_error```例外を
+投げます。TOMLParserの内部で問題が生じた場合は、```toml::internal_error```例外が
+投げられます。
+
+また、```toml::get<T>```のテンプレート型引数に正しくない型を指定した場合、
+```toml::type_error```が投げられます。
+
+TOMLParserが投げ得る全ての例外クラスは```toml::exception```クラスの派生クラスで
+あり、また```toml::exception```は```std::exception```クラスの派生クラスです。
 
 ## Testing
 
