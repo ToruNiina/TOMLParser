@@ -16,28 +16,6 @@ class exception : public std::exception
     virtual const char* what() const TOML_NOEXCEPT TOML_OVERRIDE {return "";}
 };
 
-class file_error : public exception
-{
-  public:
-    file_error(const std::string& str) : str_(str) {}
-    virtual ~file_error() TOML_NOEXCEPT TOML_OVERRIDE {}
-
-    virtual const char* what() const TOML_NOEXCEPT TOML_OVERRIDE
-    {
-        return str_.c_str();
-    }
-
-  private:
-    std::string str_;
-};
-
-class end_of_file : public file_error
-{
-  public:
-    end_of_file(const std::string& str) : file_error(str){}
-    virtual ~end_of_file() TOML_NOEXCEPT TOML_OVERRIDE {}
-};
-
 class syntax_error : public exception
 {
   public:
@@ -82,7 +60,5 @@ class internal_error : public exception
   private:
     std::string str_;
 };
-
-
-}
+}//toml
 #endif /* TOML_EXCEPTIONS */
