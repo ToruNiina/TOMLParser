@@ -112,9 +112,9 @@ int main()
 
     std::vector<toml::Table> array_of_table = 
         toml::get<toml::Array<toml::Table>>(table.at("array_of_table"));
-    int foobar0 = toml::get<toml::Integer>(array_of_table.at(0).at("foobar"));
-    int foobar1 = toml::get<toml::Integer>(array_of_table.at(1).at("foobar"));
-    int foobar2 = toml::get<toml::Integer>(array_of_table.at(2).at("foobar"));
+    std::int_least64_t foobar0 = toml::get<toml::Integer>(array_of_table.at(0).at("foobar"));
+    std::int_least64_t foobar1 = toml::get<toml::Integer>(array_of_table.at(1).at("foobar"));
+    std::int_least64_t foobar2 = toml::get<toml::Integer>(array_of_table.at(2).at("foobar"));
 
     return 0;
 }
