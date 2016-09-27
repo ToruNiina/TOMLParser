@@ -20,33 +20,63 @@ official site.
 
 Because this library is header-only, you can use this parser without build.
 
-You can easily see how to use this library if you read the following code.
+You can easily see how to use this library if you read the following.
+
+To parse file, use ```toml::Data toml::parse(std::basic_istream<charT>&)```.
+
+```cpp
+std::ifstream ifs("sample.toml");
+toml::Data data = toml::parse(ifs);
+```
+
+You can get TOML value using ```T toml::get<T>``` function.
 
 ```toml
-    # sample.toml
-    title = "this is sample"
+title = "title"
+```
 
-    [table]
-    number = +100_000
-    reals  = [-1.1e+2, 2.0, 3.0]
-    nested_array = [[true, false], # this is a comment.
-                    [true],
-                    [false]]
-    date = 1979-05-27
-    inline_table = {name = "inline table"}
-    array_of_inline_table = [
-        {key = "array"},
-        {key = "of"},
-        {key = "inline"},
-        {key = "table"},
-        ]
+```cpp
+std::string title = toml::get<toml::String>(data.at("title")); // "title"
+```
 
-    [[array_of_table]]
-    foobar = 1
-    [[array_of_table]]
-    foobar = 2
-    [[array_of_table]]
-    foobar = 3
+You can also use ```T toml::get<T>``` function for array.
+
+```toml
+array = [3, 3.1, 3.14, 3.141, 3.1415]
+```
+
+```cpp
+// {3, 3.1, 3.14, 3.141, 3.1415}
+std::vector<double> array = toml::get<toml::Array<toml::Float>>(data.at("array"));
+```
+
+If you have TOML file like this,
+
+```toml
+# sample.toml
+title = "this is sample"
+
+[table]
+number = +100_000
+reals  = [-1.1e+2, 2.0, 3.0]
+nested_array = [[true, false], # this is a comment.
+                [true],
+                [false]]
+date = 1979-05-27
+inline_table = {name = "inline table"}
+array_of_inline_table = [
+    {key = "array"},
+    {key = "of"},
+    {key = "inline"},
+    {key = "table"},
+    ]
+
+[[array_of_table]]
+foobar = 1
+[[array_of_table]]
+foobar = 2
+[[array_of_table]]
+foobar = 3
 ```
 
 With c++11, you can read above file using the code described below.
@@ -94,18 +124,18 @@ function ```toml::get<T>``` is useful, but you cannot use straightforwardly
 this function for the value like this.
 
 ```toml
-    array_of_array = [[1.0, 2.0, 3.0], ["a", "b", "c"]]
+array_of_array = [[1.0, 2.0, 3.0], ["a", "b", "c"]]
 ```
 
 In this case, ```toml::ValueBase``` will help you.
 
 ```cpp
-    std::vector<toml::ValueBase> array_of_array =
-        toml::get<toml::Array<toml::ValueBase>>(data.at("array_of_array"));
-    std::vector<double> first_array =
-        toml::get<toml::Array<toml::Float>>(array_of_array.at(0));
-    std::vector<std::string> second_array =
-        toml::get<toml::Array<toml::String>>(array_of_array.at(1));
+std::vector<toml::ValueBase> array_of_array =
+    toml::get<toml::Array<toml::ValueBase>>(data.at("array_of_array"));
+std::vector<double> first_array =
+    toml::get<toml::Array<toml::Float>>(array_of_array.at(0));
+std::vector<std::string> second_array =
+    toml::get<toml::Array<toml::String>>(array_of_array.at(1));
 ```
 
 In C++98, some of the types and methods are different.
@@ -152,12 +182,12 @@ So, the different part of the code in C++98 is below.
 
 ```cpp
 
-    boost::int_least64_t number = toml::get<toml::Integer>(table.at("number");
-    boost::chrono::system_clock::time_point date =
-        toml::get<toml::Datetime>(table.at("date"));
+boost::int_least64_t number = toml::get<toml::Integer>(table.at("number");
+boost::chrono::system_clock::time_point date =
+    toml::get<toml::Datetime>(table.at("date"));
 
-    std::vector<double> reals =
-        toml::get<toml::Array<toml::Float>::type>(table.at("reals"));
+std::vector<double> reals =
+    toml::get<toml::Array<toml::Float>::type>(table.at("reals"));
 
 //  If you do not want to write "::type", you can use std::vector as toml::Array.
 //  std::vector<double> reals =
@@ -169,6 +199,18 @@ that provides binaries already built, some source files possibly does not exist.
 If you fail to build this parser with boost with error message like
 "boost/../libs/something not found", please download boost library from official site.
 This trouble is because of forcing to use boost/chrono as header-only.
+
+### Excpetions
+
+If the syntax is invalid or some internal error occurs,
+exception ```toml::syntax_error``` or ```toml::internal_error``` is thrown by
+function ```toml::parse```.
+
+If invalid type is set as template parameter of ```toml::get<T>```, 
+exception ```toml::type_error``` is thrown.
+
+All the exception classes are the subclass of ```toml::exception``` which is
+subclass of ```std::exception```.
 
 ## Testing
 
