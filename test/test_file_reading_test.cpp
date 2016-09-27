@@ -205,3 +205,43 @@ BOOST_AUTO_TEST_CASE(test_hard_example_error)
     }
     }
 }
+
+BOOST_AUTO_TEST_CASE(test_hard_example_unicode)
+{
+    std::ifstream ifs("hard_example_unicode.toml");
+    if(ifs.good())
+    {
+        toml::Data data = toml::parse(ifs);
+        toml::Table the = toml::get<toml::Table>(data["the"]);
+        std::string test_string = toml::get<toml::String>(the["test_string"]);
+        BOOST_CHECK_EQUAL(test_string, "Ýôú'ℓℓ λáƭè ₥è áƒƭèř ƭλïƨ - #");
+
+        toml::Table the_hard = toml::get<toml::Table>(the["hard"]);
+        std::vector<std::string> test_array =
+            toml::get<toml::Array<toml::String> >(the_hard["test_array"]);
+        BOOST_CHECK_EQUAL(test_array.at(0), "] ");
+        BOOST_CHECK_EQUAL(test_array.at(1), " # ");
+
+        std::vector<std::string> test_array2 =
+            toml::get<toml::Array<toml::String> >(the_hard["test_array2"]);
+        BOOST_CHECK_EQUAL(test_array2.at(0), "Tèƨƭ #11 ]ƥřôƲèδ ƭλáƭ");
+        BOOST_CHECK_EQUAL(test_array2.at(1), "Éжƥèřï₥èñƭ #9 ωáƨ á ƨúççèƨƨ");
+
+        std::string another_test_string = 
+            toml::get<toml::String>(the_hard["another_test_string"]);
+        BOOST_CHECK_EQUAL(another_test_string, "§á₥è ƭλïñϱ, βúƭ ωïƭλ á ƨƭřïñϱ #");
+        std::string harder_test_string = 
+            toml::get<toml::String>(the_hard["harder_test_string"]);
+        BOOST_CHECK_EQUAL(harder_test_string, " Âñδ ωλèñ \"'ƨ ářè ïñ ƭλè ƨƭřïñϱ, áℓôñϱ ωïƭλ # \"");
+
+        toml::Table the_hard_bit = toml::get<toml::Table>(the_hard["βïƭ#"]);
+        std::string what = toml::get<toml::String>(the_hard_bit["ωλáƭ?"]);
+        BOOST_CHECK_EQUAL(what, "Ýôú δôñ'ƭ ƭλïñƙ ƨô₥è úƨèř ωôñ'ƭ δô ƭλáƭ?");
+        std::vector<std::string> multi_line_array = toml::get<toml::Array<toml::String>>(the_hard_bit["multi_line_array"]);
+        BOOST_CHECK_EQUAL(multi_line_array.at(0), "]");
+    }
+    else
+    {
+        std::cerr << "file open error." << std::endl;
+    }
+}
