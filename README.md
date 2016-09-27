@@ -11,7 +11,10 @@ TOMLParser supports [TOML v0.4.0](http://github.com/toml-lang/toml/blob/master/R
 If you can use c++11 features, this parser depends only on STL.
 If not so, this parser depends on Boost C++ library.
 
-To use this with C++98 & Boost, the only thing you have to do is installing boost.
+To use this parser with c++98 & boost, it is better that download boost from
+official site.
+
+[日本語版README](README_ja.md)
 
 ## Usage
 
@@ -64,7 +67,7 @@ int main()
     std::vector<double> reals =
         toml::get<toml::Array<toml::Float>>(table.at("reals"));
     std::vector<std::vector<bool>> nested_array =
-        toml::get<toml::Array<toml::Array<bool>>>(table.at("nested_array"));
+        toml::get<toml::Array<toml::Array<toml::Boolean>>>(table.at("nested_array"));
     std::chrono::system_clock::time_point date =
         toml::get<toml::Datetime>(table.at("date"));
     toml::Table inline_table = toml::get<toml::Table>(table.at("inline_table"));
@@ -89,10 +92,13 @@ int main()
 
 function ```toml::get<T>``` is useful, but you cannot use straightforwardly
 this function for the value like this.
+
 ```toml
     array_of_array = [[1.0, 2.0, 3.0], ["a", "b", "c"]]
 ```
+
 In this case, ```toml::ValueBase``` will help you.
+
 ```cpp
     std::vector<toml::ValueBase> array_of_array =
         toml::get<toml::Array<toml::ValueBase>>(data.at("array_of_array"));
@@ -108,7 +114,7 @@ For details, see Documentation.
 ## Documentation
 
 In this parser, all the TOML types are subclass of ```toml::value_base```.
-```toml::ValueBase``` is just a typedef of ```toml::shared_ptr<toml::value_base>```.
+Actually, ```toml::ValueBase``` is just a ```typedef``` of ```toml::shared_ptr<toml::value_base>```.
 
 Supported TOML types are listed below.
 
@@ -128,9 +134,9 @@ In C++98, ```toml::Array<T>``` become a type generator struct because there are
 no template using. And there are no ```at``` method in ```std::map```, so you 
 should use ```operator[]``` to access the values.
 
-Additionally, there are no ```std::chrono```, ```std::int_least64_t``` and
-```std::shared_ptr```, so ```boost::chrono```  ```boost::int\_least64\_t``` and 
-```boost::shared_ptr``` are used instead.
+Additionally, there are no ```std::chrono```, ```std::int_least64_t```
+and ```std::shared_ptr```, so ```boost::chrono```  ```boost::int\_least64\_t```
+and ```boost::shared_ptr``` are used instead.
 
 | TOML type | type names in this parser | actual type in c++98 case         |
 |:----------|:---------------------|:---------------------------------------|
@@ -158,9 +164,16 @@ So, the different part of the code in C++98 is below.
 //      toml::get<std::vector<toml::Float>>(table.at("reals"));
 ```
 
+__Note__: When you install boost using apt or some other package manager
+that provides binaries already built, some source files possibly does not exist.
+If you fail to build this parser with boost with error message like
+"boost/../libs/something not found", please download boost library from official site.
+This trouble is because of forcing to use boost/chrono as header-only.
+
 ## Testing
 
 Using Boost Unit Test Framework and CMake CTest.
+
 ```
 $ mkdir build
 $ cd build

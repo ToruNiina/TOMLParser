@@ -10,7 +10,7 @@ C++用のheader-onlyなTOML parserです。
 
 C++11が使える場合、標準ライブラリにしか依存しません。
 そうでなければ、Boost C++ Libraryに依存します。
-ただし、Boostを用いる場合も、インストールの他にするべきことはありません。
+
 
 ## Usage
 
@@ -66,7 +66,7 @@ int main()
     std::vector<double> reals =
         toml::get<toml::Array<toml::Float>>(table.at("reals"));
     std::vector<std::vector<bool>> nested_array =
-        toml::get<toml::Array<toml::Array<bool>>>(table.at("nested_array"));
+        toml::get<toml::Array<toml::Array<toml::Boolean>>>(table.at("nested_array"));
     std::chrono::system_clock::time_point date =
         toml::get<toml::Datetime>(table.at("date"));
     toml::Table inline_table = toml::get<toml::Table>(table.at("inline_table"));
@@ -89,12 +89,14 @@ int main()
 }
 ```
 
-```toml::get<T>```関数は便利ですが、特性上以下のような型にはそのままでは使えません。
+関数```toml::get<T>```は便利ですが、特性上以下のような型にはそのままでは使えません。
+
 ```toml
     array_of_array = [[1.0, 2.0, 3.0], ["a", "b", "c"]]
 ```
 
 この場合、toml::ValueBaseを用います。
+
 ```cpp
     std::vector<toml::ValueBase> array_of_array =
         toml::get<toml::Array<toml::ValueBase>>(data.at("array_of_array"));
@@ -163,9 +165,21 @@ C++98の場合、template usingが使えないため```toml::Array<T>```はtype 
 //      toml::get<std::vector<toml::Float>>(table.at("reals"));
 ```
 
+__注意__: C++11が使えずにBoostを用いる場合、apt等のビルド済みバイナリを提供するパッケージ
+マネージャでBoostをインストールすると、boost/../libs/something.cppが見つからない
+としてビルドに失敗することがあります。これは本来ライブラリをリンクすべき
+boost/chronoをヘッダオンリーで使用しようとすることに起因しています。
+ビルド済みの場合ソースは必要ないのでソースをダウンロードする必要はない為、
+パッケージマネージャの選択は妥当ですが、それだとヘッダオンリーで使用することは
+できません。Boost/chronoを用いる場合は、Boostの公式サイトからソースコードを
+含めてダウンロードし、Include pathを通すようにしてください。
+
+
+
 ## Testing
 
 Boost.unittestフレームワークと、CMake CTestを用います。
+
 ```
 $ mkdir build
 $ cd build
