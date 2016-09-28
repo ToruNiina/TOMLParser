@@ -7,7 +7,7 @@
 #include <boost/test/included/unit_test.hpp>
 #endif
 
-#include "src/toml_parser.hpp"
+#include "src/utility.hpp"
 #include <sstream>
 #include <iostream>
 
@@ -30,17 +30,65 @@ BOOST_AUTO_TEST_CASE(test_line_number)
     BOOST_CHECK_EQUAL(iss.tellg(), after_fuga);
 }
 
-BOOST_AUTO_TEST_CASE(test_is_closed)
+BOOST_AUTO_TEST_CASE(test_read_integer)
 {
-    const std::string closed_array_str("[1, 2, 3]");
-    const bool closed_array = toml::is_closed(closed_array_str, '[', ']');
-    BOOST_CHECK(closed_array);
+    {
+        std::string str("100words");
+        std::istringstream iss(str);
+        int num = toml::read_integer(iss, 3);
+        BOOST_CHECK_EQUAL(num, 100);
+    }
 
-    const std::string nested_array_str("[[1, 2], [3,4,5], [6]]");
-    const bool nested_array = toml::is_closed(nested_array_str, '[', ']');
-    BOOST_CHECK(nested_array);
+    {
+        std::string str("1234words");
+        std::istringstream iss(str);
+        int num = toml::read_integer(iss, 3);
+        BOOST_CHECK_EQUAL(num, 123);
+    }
 
-    const std::string broken_array_str("[[1, 2]");
-    const bool broken_array = toml::is_closed(broken_array_str, '[', ']');
-    BOOST_CHECK(not broken_array);
+    {
+        std::string str("12");
+        std::istringstream iss(str);
+        int num = toml::read_integer(iss, 3);
+        BOOST_CHECK_EQUAL(num, 12);
+    }
+
+    {
+        std::string str("");
+        std::istringstream iss(str);
+        iss.peek();
+        int num = toml::read_integer(iss, 3);
+        BOOST_CHECK_EQUAL(num, 0);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_get_numbers)
+{
+    {
+        std::string str("100words");
+        std::istringstream iss(str);
+        std::string num = toml::get_numbers(iss);
+        BOOST_CHECK_EQUAL(num, "100");
+    }
+
+    {
+        std::string str("1234words");
+        std::istringstream iss(str);
+        std::string num = toml::get_numbers(iss);
+        BOOST_CHECK_EQUAL(num, "1234");
+    }
+
+    {
+        std::string str("12");
+        std::istringstream iss(str);
+        std::string num = toml::get_numbers(iss);
+        BOOST_CHECK_EQUAL(num, "12");
+    }
+
+    {
+        std::string str("");
+        std::istringstream iss(str);
+        std::string num = toml::get_numbers(iss);
+        BOOST_CHECK_EQUAL(num, "");
+    }
 }

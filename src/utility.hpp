@@ -23,27 +23,16 @@ std::size_t line_number(std::basic_istream<charT>& is)
 }
 
 template<typename charT>
-bool is_closed(const std::basic_string<charT>& str,
-               const charT open, const charT close)
-{
-    if(str.front() != open || str.back() != close) return false;
-
-    int counter = 0;
-    for(typename std::basic_string<charT>::const_iterator
-        iter = str.begin(); iter != str.end(); ++iter)
-    {
-        if(*iter == open) ++counter;
-        else if(*iter == close) --counter;
-    }
-    return counter == 0;
-}
-
-template<typename charT>
 int read_integer(std::basic_istream<charT>& is, std::size_t digit)
 {
+    if(is.eof()) return 0;
     int retval;
     std::basic_string<charT> str;
-    for(std::size_t i=0; i<digit; ++i) str += is.get();
+    for(std::size_t i=0; i<digit; ++i)
+    {
+        if(is.eof()) break;
+        str += is.get();
+    }
     std::basic_istringstream<charT> iss(str);
     iss >> retval;
     return retval;
