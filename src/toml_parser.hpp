@@ -128,7 +128,6 @@ std::basic_string<charT> read_array(std::basic_istream<charT>& is)
         }
         if(is.eof())
         {
-            std::cerr << "line: " << line_number(is) << std::endl;
             throw syntax_error("split_array: invalid array");
         }
     }
@@ -153,7 +152,6 @@ std::basic_string<charT> read_inline_table(std::basic_istream<charT>& is)
         if(counter == 0) return retval;
         if(is.eof())
         {
-            std::cerr << "line: " << line_number(is) << std::endl;
             throw syntax_error("non-closed inline table");
         }
     }
@@ -182,7 +180,6 @@ std::basic_string<charT> read_basic_string(std::basic_istream<charT>& is)
     {
         if(is.eof())
         {
-            std::cerr << "line: " << line_number(is) << std::endl;
             throw syntax_error("read_basic_string: unexpected EOF");
         }
         switch(is.peek())
@@ -219,7 +216,6 @@ std::basic_string<charT> read_basic_string(std::basic_istream<charT>& is)
             {
                 if(not multi_line)
                 {
-                    std::cerr << "line: " << line_number(is) << std::endl;
                    throw syntax_error("read_basic_string: unexpected LF");
                 }
                 else
@@ -261,7 +257,6 @@ std::basic_string<charT> read_literal_string(std::basic_istream<charT>& is)
     {
         if(is.eof())
         {
-            std::cerr << "line: " << line_number(is) << std::endl;
             throw syntax_error("read_literal_string: unexpected EOF");
         }
         switch(is.peek())
@@ -285,7 +280,6 @@ std::basic_string<charT> read_literal_string(std::basic_istream<charT>& is)
             {
                 if(not multi_line)
                 {
-                    std::cerr << "line: " << line_number(is) << std::endl;
                     throw syntax_error("read_literal_string: unexpected LF");
                 }
                 else
@@ -801,7 +795,6 @@ std::basic_string<charT> parse_key(std::basic_istream<charT>& is)
     }
     else
     {
-        std::cerr << "line: " << line_number(is) << std::endl;
         throw syntax_error("invalid key");
     }
 }// }}}
@@ -815,7 +808,6 @@ parse_key_value(std::basic_istream<charT>& is)
     skip_whitespace(is);
     if(is.peek() != '=')
     {
-        std::cerr << "line: " << line_number(is) << std::endl;
         throw syntax_error("no \'=\' after key in key-value line");
     }
     is.ignore();
@@ -885,14 +877,12 @@ parse_table_name(std::basic_istream<charT>& is)
     {
         if(is.eof())
         {
-            std::cerr << "line: " << line_number(is) << std::endl;
             throw syntax_error("parse_table_name: unexpected EOF");
         }
         skip_whitespace(is);
         std::basic_string<charT> tmp = parse_key(is);
         if(tmp.empty())
         {
-            std::cerr << "line: " << line_number(is) << std::endl;
             throw syntax_error("empty key");
         }
         name.push_back(tmp);
@@ -907,7 +897,6 @@ parse_table_name(std::basic_istream<charT>& is)
             is.ignore();
             if(is.peek() != ']')
             {
-                std::cerr << "line: " << line_number(is) << std::endl;
                 throw syntax_error("invalid array_of_table definition");
             }
             is.ignore();
@@ -920,7 +909,6 @@ parse_table_name(std::basic_istream<charT>& is)
         }
         else
         {
-            std::cerr << "line: "<< line_number(is) << std::endl;
             throw syntax_error("invalid table definition");
         }
     }
@@ -932,7 +920,6 @@ parse_table_name(std::basic_istream<charT>& is)
     else if(comment_starts(is.peek())) skip_comment(is);
     else 
     {
-        std::cerr << "line: "<< line_number(is) << std::endl;
         throw syntax_error("something exists after table declaration");
     }
 
@@ -1011,18 +998,25 @@ void search_and_make_nested_table(
 template<typename charT>
 toml::Data parse(std::basic_istream<charT>& is)
 {// {{{
-    shared_ptr<table_type<charT> > data = parse_table(is);
-
-    while(!is.eof())
+    try
     {
-        const std::pair<bool, std::vector<std::basic_string<charT> > >
-            table_name = parse_table_name(is);
-        shared_ptr<value_base> table_contents = parse_table(is);
+        shared_ptr<table_type<charT> > data = parse_table(is);
+        while(!is.eof())
+        {
+            const std::pair<bool, std::vector<std::basic_string<charT> > >
+                table_name = parse_table_name(is);
+            shared_ptr<value_base> table_contents = parse_table(is);
 
-        search_and_make_nested_table<charT>(data, table_name.second.begin(),
-                table_name.second.end(), table_contents, table_name.first);
+            search_and_make_nested_table<charT>(data, table_name.second.begin(),
+                    table_name.second.end(), table_contents, table_name.first);
+        }
+        return data->value;
     }
-    return data->value;                 
+    catch(toml::exception& except)
+    {
+        std::cerr << "TOMLParser Error: line #" << line_number(is) << std::endl;
+        throw;
+    }
 }// }}}
 
 }
