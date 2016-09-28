@@ -11,6 +11,8 @@ C++用のheader-onlyなTOML parserです。
 C++11が使える場合、標準ライブラリにしか依存しません。
 そうでなければ、Boost C++ Libraryに依存します。
 
+C++11でなくBoostを用いる場合は、詳細は後述しますが、Boostをパッケージマネージャでなく公式からダウンロードすることをお勧めします。
+
 
 ## Usage
 
@@ -124,6 +126,12 @@ int main()
 array_of_array = [[1.0, 2.0, 3.0], ["a", "b", "c"]]
 ```
 
+```cpp
+// invalid! second array is not array of float.
+// std::vector<std::vector<double>> array_of_array = 
+//     toml::get<toml::Array<toml::Array<toml::Float>>>(data.at("array_of_array"));
+```
+
 この場合、toml::ValueBaseを用います。
 
 ```cpp
@@ -209,8 +217,7 @@ boost/chronoをヘッダオンリーで使用しようとすることに起因�
 投げます。TOMLParserの内部で問題が生じた場合は、```toml::internal_error```例外が
 投げられます。
 
-また、```toml::get<T>```のテンプレート型引数に正しくない型を指定した場合、
-```toml::type_error```が投げられます。
+また、```toml::get<T>```のテンプレート型引数に正しくない型を指定した場合、```toml::type_error```が投げられます。
 
 TOMLParserが投げ得る全ての例外クラスは```toml::exception```クラスの派生クラスで
 あり、また```toml::exception```は```std::exception```クラスの派生クラスです。
