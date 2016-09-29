@@ -163,7 +163,11 @@ BOOST_AUTO_TEST_CASE(test_parse_as_Array)
 {
     const std::string str1("[1, 2, 3]");
     const std::vector<toml::Integer> val1 =
-        toml::get<toml::Array<toml::Integer> >(toml::parse_array_value(str1));
+#ifdef TOML_ENABLE_CXX11
+        toml::get<toml::Array<toml::Integer>>(toml::parse_array_value(str1));
+#else
+        toml::get<toml::Array<toml::Integer>::type>(toml::parse_array_value(str1));
+#endif
     BOOST_CHECK_EQUAL(val1.at(0), 1);
     BOOST_CHECK_EQUAL(val1.at(1), 2);
     BOOST_CHECK_EQUAL(val1.at(2), 3);
@@ -171,7 +175,11 @@ BOOST_AUTO_TEST_CASE(test_parse_as_Array)
     const std::string str2(
             "[\"this\", \'is\', \'\'\'string\'\'\', \"\"\"array\"\"\"]");
     const std::vector<toml::String> val2 =
-        toml::get<toml::Array<toml::String> >(toml::parse_array_value(str2));
+#ifdef TOML_ENABLE_CXX11
+        toml::get<toml::Array<toml::String>>(toml::parse_array_value(str2));
+#else
+        toml::get<toml::Array<toml::String>::type>(toml::parse_array_value(str2));
+#endif
     BOOST_CHECK_EQUAL(val2.at(0), std::string("this"));
     BOOST_CHECK_EQUAL(val2.at(1), std::string("is"));
     BOOST_CHECK_EQUAL(val2.at(2), std::string("string"));
@@ -179,7 +187,11 @@ BOOST_AUTO_TEST_CASE(test_parse_as_Array)
 
     const std::string str3("[[1, 2, 3], [4, 5, 6], [7]]");
     const std::vector<std::vector<toml::Integer> > val3 =
-        toml::get<toml::Array<toml::Array<toml::Integer> > >(toml::parse_array_value(str3));
+#ifdef TOML_ENABLE_CXX11
+        toml::get<toml::Array<toml::Array<toml::Integer>>>(toml::parse_array_value(str3));
+#else
+        toml::get<toml::Array<toml::Array<toml::Integer>::type>::type>(toml::parse_array_value(str3));
+#endif
     BOOST_CHECK_EQUAL(val3.at(0).at(0), 1);
     BOOST_CHECK_EQUAL(val3.at(0).at(1), 2);
     BOOST_CHECK_EQUAL(val3.at(0).at(2), 3);
@@ -191,7 +203,11 @@ BOOST_AUTO_TEST_CASE(test_parse_as_Array)
     const std::string str4(
             "[[\"this\", \'is\'], [\'\'\'nested\'\'\', \"string\", \"\"\"array\"\"\"]]");
     const std::vector<std::vector<toml::String> > val4 =
-        toml::get<toml::Array<toml::Array<toml::String> > >(toml::parse_array_value(str4));
+#ifdef TOML_ENABLE_CXX11
+        toml::get<toml::Array<toml::Array<toml::String>>>(toml::parse_array_value(str4));
+#else
+        toml::get<toml::Array<toml::Array<toml::String>::type>::type>(toml::parse_array_value(str4));
+#endif
     BOOST_CHECK_EQUAL(val4.at(0).at(0), std::string("this"));
     BOOST_CHECK_EQUAL(val4.at(0).at(1), std::string("is"));
     BOOST_CHECK_EQUAL(val4.at(1).at(0), std::string("nested"));

@@ -41,7 +41,11 @@ BOOST_AUTO_TEST_CASE(test_example)
         toml::Table database = toml::get<toml::Table>(data["database"]);
         std::string server = toml::get<toml::String>(database["server"]);
         BOOST_CHECK_EQUAL(server, std::string("192.168.1.1"));
-        std::vector<toml::Integer> ports = toml::get<toml::Array<toml::Integer> >(database["ports"]);
+#ifdef TOML_ENABLE_CXX11
+        std::vector<toml::Integer> ports = toml::get<toml::Array<toml::Integer>>(database["ports"]);
+#else 
+        std::vector<toml::Integer> ports = toml::get<toml::Array<toml::Integer>::type>(database["ports"]);
+#endif
         BOOST_CHECK_EQUAL(ports.at(0), 8001);
         BOOST_CHECK_EQUAL(ports.at(1), 8001);
         BOOST_CHECK_EQUAL(ports.at(2), 8002);
@@ -70,24 +74,46 @@ BOOST_AUTO_TEST_CASE(test_example)
         }
 
         toml::Table clients = toml::get<toml::Table>(data["clients"]);
+#ifdef TOML_ENABLE_CXX11
         std::vector<toml::ValueBase> clients_data =
             toml::get<toml::Array<toml::ValueBase> >(clients["data"]);
         std::vector<std::string> first_array =
             toml::get<toml::Array<toml::String> >(clients_data.at(0));
+#else 
+        std::vector<toml::ValueBase> clients_data =
+            toml::get<toml::Array<toml::ValueBase>::type>(clients["data"]);
+        std::vector<std::string> first_array =
+            toml::get<toml::Array<toml::String>::type>(clients_data.at(0));
+#endif
         BOOST_CHECK_EQUAL(first_array.at(0), "gamma");
         BOOST_CHECK_EQUAL(first_array.at(1), "delta");
+#ifdef TOML_ENABLE_CXX11
         std::vector<toml::Integer> second_array =
-            toml::get<toml::Array<toml::Integer> >(clients_data.at(1));
+            toml::get<toml::Array<toml::Integer>>(clients_data.at(1));
+#else 
+        std::vector<toml::Integer> second_array =
+            toml::get<toml::Array<toml::Integer>::type>(clients_data.at(1));
+#endif
         BOOST_CHECK_EQUAL(second_array.at(0), 1);
         BOOST_CHECK_EQUAL(second_array.at(1), 2);
 
+#ifdef TOML_ENABLE_CXX11
         std::vector<std::string> hosts =
             toml::get<toml::Array<toml::String>>(clients["hosts"]);
+#else 
+        std::vector<std::string> hosts =
+            toml::get<toml::Array<toml::String>::type>(clients["hosts"]);
+#endif
         BOOST_CHECK_EQUAL(hosts.at(0), "alpha");
         BOOST_CHECK_EQUAL(hosts.at(1), "omega");
 
+#ifdef TOML_ENABLE_CXX11
         std::vector<toml::Table> products = 
-            toml::get<toml::Array<toml::Table> >(data["products"]);
+            toml::get<toml::Array<toml::Table>>(data["products"]);
+#else 
+        std::vector<toml::Table> products = 
+            toml::get<toml::Array<toml::Table>::type>(data["products"]);
+#endif
         {
             std::string name = toml::get<toml::String>(products.at(0)["name"]);
             BOOST_CHECK_EQUAL(name, "Hammer");
@@ -120,8 +146,13 @@ BOOST_AUTO_TEST_CASE(test_hard_example)
         BOOST_CHECK_EQUAL(test_string, "You'll hate me after this - #");
 
         toml::Table the_hard = toml::get<toml::Table>(the["hard"]);
+#ifdef TOML_ENABLE_CXX11
         std::vector<std::string> test_array =
-            toml::get<toml::Array<toml::String> >(the_hard["test_array"]);
+            toml::get<toml::Array<toml::String>>(the_hard["test_array"]);
+#else 
+        std::vector<std::string> test_array =
+            toml::get<toml::Array<toml::String>::type>(the_hard["test_array"]);
+#endif
         BOOST_CHECK_EQUAL(test_array.at(0), "] ");
         BOOST_CHECK_EQUAL(test_array.at(1), " # ");
 
@@ -140,7 +171,12 @@ BOOST_AUTO_TEST_CASE(test_hard_example)
         toml::Table the_hard_bit = toml::get<toml::Table>(the_hard["bit#"]);
         std::string what = toml::get<toml::String>(the_hard_bit["what?"]);
         BOOST_CHECK_EQUAL(what, "You don't think some user won't do that?");
-        std::vector<std::string> multi_line_array = toml::get<toml::Array<toml::String>>(the_hard_bit["multi_line_array"]);
+        std::vector<std::string> multi_line_array =
+#ifdef TOML_ENABLE_CXX11
+            toml::get<toml::Array<toml::String>>(the_hard_bit["multi_line_array"]);
+#else 
+            toml::get<toml::Array<toml::String>::type>(the_hard_bit["multi_line_array"]);
+#endif
         BOOST_CHECK_EQUAL(multi_line_array.at(0), "]");
     }
     else
@@ -218,12 +254,20 @@ BOOST_AUTO_TEST_CASE(test_hard_example_unicode)
 
         toml::Table the_hard = toml::get<toml::Table>(the["hard"]);
         std::vector<std::string> test_array =
-            toml::get<toml::Array<toml::String> >(the_hard["test_array"]);
+#ifdef TOML_ENABLE_CXX11
+            toml::get<toml::Array<toml::String>>(the_hard["test_array"]);
+#else 
+            toml::get<toml::Array<toml::String>::type>(the_hard["test_array"]);
+#endif
         BOOST_CHECK_EQUAL(test_array.at(0), "] ");
         BOOST_CHECK_EQUAL(test_array.at(1), " # ");
 
         std::vector<std::string> test_array2 =
-            toml::get<toml::Array<toml::String> >(the_hard["test_array2"]);
+#ifdef TOML_ENABLE_CXX11
+            toml::get<toml::Array<toml::String>>(the_hard["test_array2"]);
+#else 
+            toml::get<toml::Array<toml::String>::type>(the_hard["test_array2"]);
+#endif
         BOOST_CHECK_EQUAL(test_array2.at(0), "Tèƨƭ #11 ]ƥřôƲèδ ƭλáƭ");
         BOOST_CHECK_EQUAL(test_array2.at(1), "Éжƥèřï₥èñƭ #9 ωáƨ á ƨúççèƨƨ");
 
@@ -237,7 +281,12 @@ BOOST_AUTO_TEST_CASE(test_hard_example_unicode)
         toml::Table the_hard_bit = toml::get<toml::Table>(the_hard["βïƭ#"]);
         std::string what = toml::get<toml::String>(the_hard_bit["ωλáƭ?"]);
         BOOST_CHECK_EQUAL(what, "Ýôú δôñ'ƭ ƭλïñƙ ƨô₥è úƨèř ωôñ'ƭ δô ƭλáƭ?");
-        std::vector<std::string> multi_line_array = toml::get<toml::Array<toml::String>>(the_hard_bit["multi_line_array"]);
+        std::vector<std::string> multi_line_array =
+#ifdef TOML_ENABLE_CXX11
+            toml::get<toml::Array<toml::String>>(the_hard_bit["multi_line_array"]);
+#else 
+            toml::get<toml::Array<toml::String>::type>(the_hard_bit["multi_line_array"]);
+#endif
         BOOST_CHECK_EQUAL(multi_line_array.at(0), "]");
     }
     else
