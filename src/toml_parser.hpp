@@ -427,9 +427,9 @@ template<typename charT>
 std::basic_string<charT>
 parse_string_key(const std::basic_string<charT>& str)
 {// {{{
-    if(str.front() == '\'')
+    if(str.at(0) == '\'')
         return parse_literal_string_key(str);
-    else if(str.front() == '\"')
+    else if(str.at(0) == '\"')
         return parse_basic_string_key(str);
     else throw internal_error("parse_string_key: invalid call");
 }// }}}

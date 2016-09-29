@@ -240,7 +240,7 @@ struct is_impl<array_type, charT>
 {
     static bool invoke(const std::basic_string<charT>& str)
     {
-        if(str.front() != '[' || str.back() != ']') return false;
+        if(*(str.begin()) != '[' || *(str.rbegin()) != ']') return false;
         return true;
     }
 };
@@ -250,7 +250,7 @@ struct is_impl<table_type<charT>, charT>
 {
     static bool invoke(const std::basic_string<charT>& str)
     {
-        if(str.front() != '{' || str.back() != '}') return false;
+        if(*(str.begin()) != '{' || *(str.rbegin()) != '}') return false;
         return true;
     }
 };
