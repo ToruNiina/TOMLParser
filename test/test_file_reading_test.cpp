@@ -85,6 +85,7 @@ BOOST_AUTO_TEST_CASE(test_example)
         std::vector<std::string> first_array =
             toml::get<toml::Array<toml::String>::type>(clients_data.at(0));
 #endif
+
         BOOST_CHECK_EQUAL(first_array.at(0), "gamma");
         BOOST_CHECK_EQUAL(first_array.at(1), "delta");
 #ifdef TOML_ENABLE_CXX11
@@ -157,7 +158,11 @@ BOOST_AUTO_TEST_CASE(test_hard_example)
         BOOST_CHECK_EQUAL(test_array.at(1), " # ");
 
         std::vector<std::string> test_array2 =
-            toml::get<toml::Array<toml::String> >(the_hard["test_array2"]);
+#ifdef TOML_ENABLE_CXX11
+            toml::get<toml::Array<toml::String>>(the_hard["test_array2"]);
+#else 
+            toml::get<toml::Array<toml::String>::type>(the_hard["test_array2"]);
+#endif
         BOOST_CHECK_EQUAL(test_array2.at(0), "Test #11 ]proved that");
         BOOST_CHECK_EQUAL(test_array2.at(1), "Experiment #9 was a success");
 
