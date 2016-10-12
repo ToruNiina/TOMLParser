@@ -1,15 +1,15 @@
 #ifndef TOML_TYPE_TRAITS
 #define TOML_TYPE_TRAITS
-#include "definitions.hpp"
 #include "toml_values.hpp"
 
 namespace toml
 {
+
 template<typename T>
 struct map_key_charactor_helper{};
-template<typename charT>
-struct map_key_charactor_helper<
-    std::map<std::basic_string<charT>, shared_ptr<value_base> > >
+
+template<typename charT, typename valueT>
+struct map_key_charactor_helper<std::map<std::basic_string<charT>, valueT> >
 {
     typedef charT char_type;
 };
