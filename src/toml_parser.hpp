@@ -781,7 +781,7 @@ template<typename charT>
 std::basic_string<charT> parse_key(std::basic_istream<charT>& is)
 {// {{{
     charT front = is.peek();
-    if(is_bare_key_component(is.peek()))
+    if(is_bare_key_component(front))
     {
         return read_bare_key(is);
     }
