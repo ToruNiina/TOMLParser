@@ -6,32 +6,33 @@ TOMLParser
 
 C++ header-only TOML Parser.
 
-TOMLParser supports [TOML v0.4.0](http://github.com/toml-lang/toml/blob/master/README.md).
+__TOMLParser__ supports [TOML v0.4.0](http://github.com/toml-lang/toml/blob/master/README.md).
 
-If you can use c++11 features, this parser depends only on STL.
-If not so, this parser depends on Boost C++ library.
+If you can use c++11 features, this parser depends only on the STL.
+If not so, it depends on the Boost C++ library.
 
-To use this parser with c++98 & boost, it is better that download boost from
-official site.
+To use this parser with c++98 & boost, it is better that download the boost library
+from the official site.
 
 [日本語版README](README_ja.md)
 
 ## Usage
 
-Because this library is header-only, you can use this parser without build.
+Because this is header-only library, you can use __TOMLParser__ without build.
 
-You can easily see how to use this library if you read the following.
+You can easily see how to use it if you read the following sample codes.
 
-To parse file, use ```toml::Data toml::parse(std::basic_istream<charT>&)```.
+To parse a TOML-file, use the `toml::Data toml::parse(std::basic_istream<charT>&)` function.
 
 ```cpp
 std::ifstream ifs("sample.toml");
 toml::Data data = toml::parse(ifs);
 ```
 
-You can get TOML value using ```T toml::get<T>``` function.
+You can get a TOML-value using the `T toml::get<T>` function.
 
 ```toml
+# toml file
 title = "title"
 ```
 
@@ -39,9 +40,10 @@ title = "title"
 std::string title = toml::get<toml::String>(data.at("title")); // "title"
 ```
 
-You can also use ```T toml::get<T>``` function for array.
+You can also use the `T toml::get<T>` function for an array.
 
 ```toml
+# toml file
 array = [3, 3.1, 3.14, 3.141, 3.1415]
 ```
 
@@ -50,7 +52,7 @@ array = [3, 3.1, 3.14, 3.141, 3.1415]
 std::vector<double> array = toml::get<toml::Array<toml::Float>>(data.at("array"));
 ```
 
-If you have TOML file like this,
+If you have a TOML-file like the following,
 
 ```toml
 # sample.toml
@@ -79,7 +81,7 @@ foobar = 2
 foobar = 3
 ```
 
-With c++11, you can read above file using the code described below.
+you can read and parse it using the c++11 code described below.
 
 ```cpp
 #include "toml.hpp"
@@ -120,14 +122,14 @@ int main()
 }
 ```
 
-function ```toml::get<T>``` is useful, but you cannot use straightforwardly
-this function for the value like this.
+Even though the function `toml::get<T>` is useful,
+you cannot use it straightforwardly for a value like this.
 
 ```toml
 array_of_array = [[1.0, 2.0, 3.0], ["a", "b", "c"]]
 ```
 
-In this case, ```toml::ValueBase``` will help you.
+In this case, `toml::ValueBase` will help you.
 
 ```cpp
 std::vector<toml::ValueBase> array_of_array =
@@ -139,46 +141,47 @@ std::vector<std::string> second_array =
 ```
 
 In C++98, some of the types and methods are different.
-For details, see Documentation.
+For more detail, see Documentation.
 
 ## Documentation
 
-In this parser, all the TOML types are subclass of ```toml::value_base```.
-Actually, ```toml::ValueBase``` is just a ```typedef``` of ```toml::shared_ptr<toml::value_base>```.
+In this parser, all the TOML types are the subclass of `toml::value_base`.
+Actually, `toml::ValueBase` is just a `typedef` of `toml::shared_ptr<toml::value_base>`.
 
-Supported TOML types are listed below.
+All the supported TOML types are listed below.
 
-| TOML type | type names in this parser | actual type in c++11 case         |
-|:----------|:---------------------|:---------------------------------------|
-| Boolean   | toml::Boolean        | bool                                   |
-| Integer   | toml::Integer        | std::int\_least64\_t                   |
-| Float     | toml::Float          | double                                 |
-| String    | toml::String         | std::string                            |
-| Datetime  | toml::Datetime       | std::chrono::system\_clock::time\_point|
-| Array     | toml::Array< typename T > | std::vector < T >                 |
-| Table     | toml::Table          | std::map< std::string, std::shared\_ptr < toml::value\_base > > |
+| TOML type | type names in this parser | actual type in c++11                   |
+|:----------|:--------------------------|:---------------------------------------|
+| Boolean   | `toml::Boolean`           | `bool`                                 |
+| Integer   | `toml::Integer`           | `std::int_least64_t`                   |
+| Float     | `toml::Float`             | `double`                               |
+| String    | `toml::String`            | `std::string`                          |
+| Datetime  | `toml::Datetime`          | `std::chrono::system_clock::time_point`|
+| Array     | `toml::Array<typename T>` | `std::vector<T>`                       |
+| Table     | `toml::Table`             | `std::map<std::string, std::shared_ptr<toml::value_base>>` |
 
-Also, ```toml::Data``` is just a typedef of ```toml::Table```.
+Also, `toml::Data` is just a typedef of `toml::Table`.
 
-In C++98, ```toml::Array<T>``` become a type generator struct because there are
-no template using. And there are no ```at``` method in ```std::map```, so you 
-should use ```operator[]``` to access the values.
+In C++98, `toml::Array<T>` become a struct that is `type generator`
+because there are no `template using alias`.
+And there are no `at` method in `std::map`,
+so you should use `operator[]` to access the values.
 
-Additionally, there are no ```std::chrono```, ```std::int_least64_t```
-and ```std::shared_ptr```, so ```boost::chrono```  ```boost::int\_least64\_t```
-and ```boost::shared_ptr``` are used instead.
+Additionally, there are no `std::chrono`, `std::int_least64_t`
+and `std::shared_ptr`, so `boost::chrono`, `boost::int_least64_t`
+and `boost::shared_ptr` are used instead.
 
-| TOML type | type names in this parser | actual type in c++98 case         |
-|:----------|:---------------------|:---------------------------------------|
-| Boolean   | toml::Boolean        | bool                                   |
-| Integer   | toml::Integer        | boost::int\_least64\_t                 |
-| Float     | toml::Float          | double                                 |
-| String    | toml::String         | std::string                            |
-| Datetime  | toml::Datetime       | boost::chrono::system\_clock::time\_point|
-| Array     | toml::Array< typename T >::type | std::vector < T >                 |
-| Table     | toml::Table          | std::map< std::string, boost::shared\_ptr < toml::value\_base > > |
+| TOML type | type names in this parser | actual type in c++98                     |
+|:----------|:--------------------------|:-----------------------------------------|
+| Boolean   | `toml::Boolean`           | `bool`                                   |
+| Integer   | `toml::Integer`           | `boost::int_least64_t`                   |
+| Float     | `toml::Float`             | `double`                                 |
+| String    | `toml::String`            | `std::string`                            |
+| Datetime  | `toml::Datetime`          | `boost::chrono::system_clock::time_point`|
+| Array     | `toml::Array<typename T>::type` | `std::vector<T>`                   |
+| Table     | `toml::Table`             | `std::map<std::string, boost::shared_ptr<toml::value_base>>` |
 
-So, the different part of the code in C++98 is below.
+So, the different part of the sample code in C++98 is below.
 
 ```cpp
 
@@ -189,28 +192,30 @@ boost::chrono::system_clock::time_point date =
 std::vector<double> reals =
     toml::get<toml::Array<toml::Float>::type>(table.at("reals"));
 
-//  If you do not want to write "::type", you can use std::vector as toml::Array.
+//  If you do not want to write "::type", you can use std::vector instead of toml::Array.
 //  std::vector<double> reals =
 //      toml::get<std::vector<toml::Float>>(table.at("reals"));
 ```
 
 __Note__: When you install boost using apt or some other package manager
 that provides binaries already built, some source files possibly does not exist.
-If you fail to build this parser with boost with error message like
-"boost/../libs/something not found", please download boost library from official site.
-This trouble is because of forcing to use boost/chrono as header-only.
+If you fail to build your own project that includes this parser using boost and c++98
+with an error message like "boost/../libs/something not found", please download
+boost library from the official site.
+The reason of this problem is you and this parser are forcing to use
+```boost/chrono``` as header-only.
 
 ### Excpetions
 
-If the syntax is invalid or some internal error occurs,
+If the syntax is invalid or some sort of an internal error occurs,
 exception ```toml::syntax_error``` or ```toml::internal_error``` is thrown by
-function ```toml::parse```.
+the function ```toml::parse```, respectively.
 
-If invalid type is set as template parameter of ```toml::get<T>```, 
+If an invalid type is set as a template parameter of the ```toml::get<T>``` function, 
 exception ```toml::type_error``` is thrown.
 
 All the exception classes are the subclass of ```toml::exception``` which is
-subclass of ```std::exception```.
+the subclass of ```std::exception```.
 
 ## Testing
 
