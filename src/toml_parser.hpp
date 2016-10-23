@@ -111,7 +111,6 @@ std::basic_string<charT> read_array(std::basic_istream<charT>& is)
         skip_ignorable(is);
 
         const std::basic_string<charT> tmp = read_value(is);
-        if(tmp.empty()) throw internal_error("read_array value is empty");
 
         retval += tmp;
 
