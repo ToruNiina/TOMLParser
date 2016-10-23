@@ -162,7 +162,7 @@ All the supported TOML types are listed below.
 
 Also, `toml::Data` is just a typedef of `toml::Table`.
 
-In C++98, `toml::Array<T>` become a struct that is `type generator`
+In C++98, `toml::Array<T>` become a struct that is a `type generator`
 because there are no `template using alias`.
 And there are no `at` method in `std::map`,
 so you should use `operator[]` to access the values.
