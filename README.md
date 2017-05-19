@@ -6,6 +6,8 @@ TOMLParser
 
 C++ header-only TOML Parser.
 
+__NOTE__: New c++11 toml library named [toml11](https://github.com/ToruNiina/toml11) is ready. If you can use c++11, use it. From now, this repository focus on c++98 & boost. In the next release, I plan to change some of the interfaces.
+
 __TOMLParser__ supports [TOML v0.4.0](http://github.com/toml-lang/toml/blob/master/README.md).
 
 If you can use c++11 features, this parser depends only on the STL.
