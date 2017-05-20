@@ -54,6 +54,8 @@ struct value
     template<typename T> value(T& v)      : v_(v){}
     template<typename T> value& operator=(const T& v){this->v_ = v; return *this;}
     template<typename T> value& operator=(T& v)      {this->v_ = v; return *this;}
+    value(value& v) : v_(v.v_){}
+    value& operator=(value& v){v_  = v.v_; return *this;}
 #endif
 
   private:
